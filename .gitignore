@@ -1,0 +1,36 @@
+# --- Secrets & Config ---
+.env
+.vscode/
+hint.txt
+
+# --- Logs & Temp Data ---
+logs/
+*.log
+
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+virenv/
+db.sqlite3
+.pytest_cache/
+.python-version
+
+# --- Node / React ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+build/
+dist/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Large/Legacy Data & Work Instructions ---
+1_data/
+7_work_instruction/
+old/
+test_log_collector
