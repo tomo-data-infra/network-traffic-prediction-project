@@ -89,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'log_collector',  # Must match the DB name in pgpass
         'USER': 'postgres',  # Must match the User in pgpass
-        'PASSWORD': DB_PASSWORD, # DB_PASSWORD = os.getenv('DB_PASSWORD') # Environment variable 
+        'PASSWORD': DB_PASSWORD, # Environment variable 
         'HOST': 'localhost',
         'PORT': '5432',  # Leave empty
     }
