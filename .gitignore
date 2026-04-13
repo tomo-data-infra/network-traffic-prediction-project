@@ -1,5 +1,6 @@
 # --- Secrets & Config ---
 .env
+.env.local
 .vscode/
 hint.txt
 
