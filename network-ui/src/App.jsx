@@ -36,9 +36,10 @@ function App() {
   }, []);
 
   // Admin check function
+  const PASSWORD = import.meta.env.VITE_PASSWORD;
   const isAdmin = () => {
     const password = prompt('Enter Admin Password:');
-    return password === 'admin123'; // Replace with a better auth mechanism
+    return password === PASSWORD; // Replace with a better auth mechanism
   };
 
   // --- CREATE ---
