@@ -1,25 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import React, { useState, useEffect, useRef } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import './App.css'; // Assuming you add the CSS below
 
 function App() {
   const [events, setEvents] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [modalState, setModalState] = useState({ show: false, mode: 'create', data: null });
+  const [authError, setAuthError] = useState('');
+  const passwordRef = useRef(null);
 
-  // Fetch existing events from DB on load
+  const PASSWORD = import.meta.env.VITE_PASSWORD;
+
+  // Fetch events
   const fetchEvents = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/event_sessions/');
       const data = await response.json();
-      
-      // Map API response to FullCalendar format
       const formattedEvents = data.map(evt => ({
         id: evt.session_id,
         title: evt.event_name,
         start: evt.start_ts,
         end: evt.end_ts,
-        // color: evt.session_category === 'system_update' ? 'red' : 'blue',
         extendedProps: {
           category: evt.session_category,
           devices: evt.expected_devices
@@ -35,106 +39,134 @@ function App() {
     fetchEvents();
   }, []);
 
-  // Admin check function
-  const PASSWORD = import.meta.env.VITE_PASSWORD;
-  const isAdmin = () => {
-    const password = prompt('Enter Admin Password:');
-    return password === PASSWORD; // Replace with a better auth mechanism
-  };
-
-  // --- CREATE ---
-  const handleDateSelect = async (selectInfo) => {
-    if (!isAdmin()) return;
-
-    const title = prompt('Enter Event Name:');
-    if (!title) return;
-
-    const devices = prompt('Number of expected devices:', '1');
-    const category = prompt('Category (video_session or system_update):', 'video_session');
-
-    const newEvent = {
-      event_name: title,
-      start_ts: selectInfo.startStr, 
-      end_ts: selectInfo.endStr,
-      expected_devices: parseInt(devices) || 1,
-      session_category: category 
-    };
-
-    try {
-      const response = await fetch('http://localhost:8000/api/event_sessions/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEvent),
-      });
-
-      if (response.ok) {
-        alert('Event created!');
-        fetchEvents(); // Refresh data
-      }
-    } catch (err) {
-      console.error('Error:', err);
+  // --- Auth Handler ---
+  const handleAuth = (e) => {
+    e.preventDefault();
+    if (passwordRef.current.value === PASSWORD) {
+      setIsAuthenticated(true);
+      setAuthError('');
+    } else {
+      setAuthError('Incorrect Password');
     }
   };
 
-  // --- UPDATE / DELETE ---
-  const handleEventClick = async (clickInfo) => {
-    if (!isAdmin()) return;
+  // --- Modal Handlers ---
+  const openModal = (mode, data = null) => {
+    setModalState({ show: true, mode, data });
+  };
 
-    const action = prompt('Enter "delete" to remove, or "update" to change name:', 'update');
-    
-    if (action === 'delete') {
-      if (window.confirm(`Are you sure you want to delete '${clickInfo.event.title}'?`)) {
-        try {
-          await fetch(`http://localhost:8000/api/event_sessions/${clickInfo.event.id}/`, {
-            method: 'DELETE',
-          });
-          clickInfo.event.remove();
-          alert('Event deleted');
-        } catch (err) {
-          console.error('Delete error:', err);
-        }
-      }
-    } else if (action === 'update') {
-      const newTitle = prompt('New Event Name:', clickInfo.event.title);
-      if (!newTitle) return;
+  const closeModal = () => {
+    setModalState({ show: false, mode: 'create', data: null });
+  };
 
-      try {
-        const response = await fetch(`http://localhost:8000/api/event_sessions/${clickInfo.event.id}/`, {
+  // --- CRUD Operations ---
+  const handleDateSelect = (selectInfo) => {
+    if (!isAuthenticated) return;
+    openModal('create', { start: selectInfo.startStr, end: selectInfo.endStr });
+  };
+
+  const handleEventClick = (clickInfo) => {
+    if (!isAuthenticated) return;
+    openModal('edit', {
+      id: clickInfo.event.id,
+      title: clickInfo.event.title,
+      start: clickInfo.event.startStr,
+      end: clickInfo.event.endStr,
+      category: clickInfo.event.extendedProps.category,
+      devices: clickInfo.event.extendedProps.devices
+    });
+  };
+
+  const handleSubmitEvent = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const eventData = {
+      event_name: formData.get('title'),
+      expected_devices: parseInt(formData.get('devices')),
+      session_category: formData.get('category')
+    };
+
+    try {
+      if (modalState.mode === 'create') {
+        const payload = { ...eventData, start_ts: modalState.data.start, end_ts: modalState.data.end };
+        await fetch('http://localhost:8000/api/event_sessions/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await fetch(`http://localhost:8000/api/event_sessions/${modalState.data.id}/`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event_name: newTitle }),
+          body: JSON.stringify(eventData),
         });
-
-        if (response.ok) {
-          fetchEvents(); // Refresh
-          alert('Event updated');
-        }
-      } catch (err) {
-        console.error('Update error:', err);
       }
+      fetchEvents();
+      closeModal();
+    } catch (err) {
+      console.error('Error saving event:', err);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!window.confirm('Are you sure?')) return;
+    try {
+      await fetch(`http://localhost:8000/api/event_sessions/${modalState.data.id}/`, {
+        method: 'DELETE',
+      });
+      fetchEvents();
+      closeModal();
+    } catch (err) {
+      console.error('Delete error:', err);
     }
   };
 
   return (
     <div style={{ padding: '20px' }}>
       <h1>RTT Prediction Calendar</h1>
+
+      {/* --- Auth Screen --- */}
+      {!isAuthenticated && (
+        <form onSubmit={handleAuth} className="auth-overlay">
+          <h2>Enter Admin Password</h2>
+          <input type="password" ref={passwordRef} placeholder="Password" />
+          <button type="submit">Login</button>
+          {authError && <p style={{ color: 'red' }}>{authError}</p>}
+        </form>
+      )}
+
+      {/* --- Event Modal --- */}
+      {modalState.show && (
+        <div className="modal-backdrop">
+          <form className="modal-content" onSubmit={handleSubmitEvent}>
+            <h3>{modalState.mode === 'create' ? 'Add Event' : 'Edit Event'}</h3>
+            <input name="title" defaultValue={modalState.data?.title} placeholder="Title" required />
+            <input name="devices" type="number" defaultValue={modalState.data?.devices || 1} placeholder="Devices" />
+            <select name="category" defaultValue={modalState.data?.category || 'video_session'}>
+              <option value="video_session">Video Session</option>
+              <option value="system_update">System Update</option>
+            </select>
+            <div className="modal-actions">
+              <button type="button" onClick={closeModal}>Cancel</button>
+              {modalState.mode === 'edit' && (
+                <button type="button" className="delete-btn" onClick={handleDeleteEvent}>Delete</button>
+              )}
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridDay"
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        }}
-        editable={true}
-        selectable={true}
+        headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' }}
+        editable={isAuthenticated} // Only editable if authenticated
+        selectable={isAuthenticated} // Only selectable if authenticated
         selectMirror={true}
         dayMaxEvents={true}
-        
-        // --- Granularity Settings ---
         slotDuration={'00:05:00'} // Lines every 5 mins
         snapDuration={'00:01:00'} // Can drag/resize in 1-min increments
-        
         select={handleDateSelect}
         eventClick={handleEventClick}
         events={events}
