@@ -6,7 +6,7 @@ pip-audit
 pip-tools
 
 # --- Web Framework ---
-Django>=5.1
+Django>=6.0.4
 djangorestframework
 django-cors-headers  # Crucial for React to talk to Django
 
@@ -16,5 +16,6 @@ psycopg2-binary
 # --- Other ---
 pygments >= 2.20.0
 requests >= 2.33.0
-cryptography >= 46.0.6
+cryptography >= 46.0.7
 python-dotenv
+pillow >= 12.2.0
