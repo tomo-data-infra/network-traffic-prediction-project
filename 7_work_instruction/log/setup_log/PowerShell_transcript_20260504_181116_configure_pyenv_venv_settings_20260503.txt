@@ -1,0 +1,310 @@
+**********************
+PowerShell transcript start
+Start time: 20260504181116
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 33316
+PSVersion: 7.6.1
+PSEdition: Core
+GitCommitId: 7.6.1
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260504_181116.txt
+PS C:\Users\user> wsl --update
+更新プログラムを確認しています。
+Linux 用 Windows サブシステムの最新バージョンは既にインストールされています。
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 24.04.4 LTS
+Release:        24.04
+Codename:       noble
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pyenv update
+pyenv: no such command `update'
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python versions
+/home/user/.pyenv/versions/3.14.4/bin/python: can't open file '/mnt/c/Users/user/versions': [Errno 2] No such file or directory
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ # Update the main pyenv repository
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pyenv -v
+pyenv 2.6.28-3-g0b0335a3
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pyenv versions
+  system
+  3.6.15
+  3.6.15/envs/python_3.6.15_env_nlp_bot_keras_tensorflow
+  3.9.5
+  3.9.5/envs/python_3.9.5_env
+  3.10.13
+* 3.14.4 (set by /mnt/c/Users/user/.python-version)
+  python_3.6.15_env_nlp_bot_keras_tensorflow --> /home/user/.pyenv/versions/3.6.15/envs/python_3.6.15_env_nlp_bot_keras_tensorflow
+  python_3.9.5_env --> /home/user/.pyenv/versions/3.9.5/envs/python_3.9.5_env
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ # Update the main pyenv repository
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd $PYENV_ROOT && git pull
+Already up to date.
+user@DESKTOP-KTE041O:~/.pyenv$ # Update the python-build plugin (which stores the version lists)
+user@DESKTOP-KTE041O:~/.pyenv$ cd $PYENV_ROOT/plugins/python-build && git pull
+Already up to date.
+user@DESKTOP-KTE041O:~/.pyenv/plugins/python-build$ pyenv install --list | grep "^  3."
+  3.0.1
+  3.1.0
+  3.1.1
+  3.1.2
+  3.1.3
+  3.1.4
+  3.1.5
+  3.2.0
+  3.2.1
+  3.2.2
+  3.2.3
+  3.2.4
+  3.2.5
+  3.2.6
+  3.3.0
+  3.3.1
+  3.3.2
+  3.3.3
+  3.3.4
+  3.3.5
+  3.3.6
+  3.3.7
+  3.4.0
+  3.4-dev
+  3.4.1
+  3.4.2
+  3.4.3
+  3.4.4
+  3.4.5
+  3.4.6
+  3.4.7
+  3.4.8
+  3.4.9
+  3.4.10
+  3.5.0
+  3.5-dev
+  3.5.1
+  3.5.2
+  3.5.3
+  3.5.4
+  3.5.5
+  3.5.6
+  3.5.7
+  3.5.8
+  3.5.9
+  3.5.10
+  3.6.0
+  3.6-dev
+  3.6.1
+  3.6.2
+  3.6.3
+  3.6.4
+  3.6.5
+  3.6.6
+  3.6.7
+  3.6.8
+  3.6.9
+  3.6.10
+  3.6.11
+  3.6.12
+  3.6.13
+  3.6.14
+  3.6.15
+  3.7.0
+  3.7-dev
+  3.7.1
+  3.7.2
+  3.7.3
+  3.7.4
+  3.7.5
+  3.7.6
+  3.7.7
+  3.7.8
+  3.7.9
+  3.7.10
+  3.7.11
+  3.7.12
+  3.7.13
+  3.7.14
+  3.7.15
+  3.7.16
+  3.7.17
+  3.8.0
+  3.8-dev
+  3.8.1
+  3.8.2
+  3.8.3
+  3.8.4
+  3.8.5
+  3.8.6
+  3.8.7
+  3.8.8
+  3.8.9
+  3.8.10
+  3.8.11
+  3.8.12
+  3.8.13
+  3.8.14
+  3.8.15
+  3.8.16
+  3.8.17
+  3.8.18
+  3.8.19
+  3.8.20
+  3.9.0
+  3.9-dev
+  3.9.1
+  3.9.2
+  3.9.4
+  3.9.5
+  3.9.6
+  3.9.7
+  3.9.8
+  3.9.9
+  3.9.10
+  3.9.11
+  3.9.12
+  3.9.13
+  3.9.14
+  3.9.15
+  3.9.16
+  3.9.17
+  3.9.18
+  3.9.19
+  3.9.20
+  3.9.21
+  3.9.22
+  3.9.23
+  3.9.24
+  3.9.25
+  3.10.0
+  3.10-dev
+  3.10.1
+  3.10.2
+  3.10.3
+  3.10.4
+  3.10.5
+  3.10.6
+  3.10.7
+  3.10.8
+  3.10.9
+  3.10.10
+  3.10.11
+  3.10.12
+  3.10.13
+  3.10.14
+  3.10.15
+  3.10.16
+  3.10.17
+  3.10.18
+  3.10.19
+  3.10.20
+  3.11.0
+  3.11-dev
+  3.11.1
+  3.11.2
+  3.11.3
+  3.11.4
+  3.11.5
+  3.11.6
+  3.11.7
+  3.11.8
+  3.11.9
+  3.11.10
+  3.11.11
+  3.11.12
+  3.11.13
+  3.11.14
+  3.11.15
+  3.12.0
+  3.12-dev
+  3.12.1
+  3.12.2
+  3.12.3
+  3.12.4
+  3.12.5
+  3.12.6
+  3.12.7
+  3.12.8
+  3.12.9
+  3.12.10
+  3.12.11
+  3.12.12
+  3.12.13
+  3.13.0
+  3.13.0t
+  3.13-dev
+  3.13t-dev
+  3.13.1
+  3.13.1t
+  3.13.2
+  3.13.2t
+  3.13.3
+  3.13.3t
+  3.13.4
+  3.13.4t
+  3.13.5
+  3.13.5t
+  3.13.6
+  3.13.6t
+  3.13.7
+  3.13.7t
+  3.13.8
+  3.13.8t
+  3.13.9
+  3.13.9t
+  3.13.10
+  3.13.10t
+  3.13.11
+  3.13.12
+  3.13.12t
+  3.13.13
+  3.13.13t
+  3.14.0
+  3.14.0t
+  3.14-dev
+  3.14t-dev
+  3.14.1
+  3.14.1t
+  3.14.2
+  3.14.3
+  3.14.3t
+  3.14.4
+  3.14.4t
+  3.15.0a8
+  3.15.0a8t
+  3.15-dev
+  3.15t-dev
+user@DESKTOP-KTE041O:~/.pyenv/plugins/python-build$ python -V
+Python 3.14.4
+user@DESKTOP-KTE041O:~/.pyenv/plugins/python-build$ pip list
+Package Version
+------- -------
+pip     26.0.1
+user@DESKTOP-KTE041O:~/.pyenv/plugins/python-build$ cd
+user@DESKTOP-KTE041O:~$ pip list
+Package Version
+------- -------
+pip     26.0.1
+user@DESKTOP-KTE041O:~$ which python
+/home/user/.pyenv/shims/python
+user@DESKTOP-KTE041O:~$ pyenv version
+3.14.4 (set by /home/user/.pyenv/version)
+user@DESKTOP-KTE041O:~$ pyenv versions
+  system
+  3.6.15
+  3.6.15/envs/python_3.6.15_env_nlp_bot_keras_tensorflow
+  3.9.5
+  3.9.5/envs/python_3.9.5_env
+  3.10.13
+* 3.14.4 (set by /home/user/.pyenv/version)
+  python_3.6.15_env_nlp_bot_keras_tensorflow --> /home/user/.pyenv/versions/3.6.15/envs/python_3.6.15_env_nlp_bot_keras_tensorflow
+  python_3.9.5_env --> /home/user/.pyenv/versions/3.9.5/envs/python_3.9.5_env
+user@DESKTOP-KTE041O:~$ exit
+logout
+PS C:\Users\user>

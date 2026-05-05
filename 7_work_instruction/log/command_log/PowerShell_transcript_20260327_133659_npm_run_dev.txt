@@ -1,0 +1,105 @@
+**********************
+PowerShell transcript start
+Start time: 20260327133659
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 24216
+PSVersion: 7.6.0
+PSEdition: Core
+GitCommitId: 7.6.0
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+PowerShell 7.6.0
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260327_133659.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd Documents/projects/ping_rtt_prediction
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ cd network-ui
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ source ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm run dev
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 2017 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediuser@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm run dev
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 3956 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm run dev
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 3932 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm run dev
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 1640 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+11:54:37 AM [vite] (client) Pre-transform error: Transform failed with 1 error:
+
+[PARSE_ERROR] Error: Invalid Character `<`
+    ╭─[ src/App.jsx:74:6 ]
+    │
+ 74 │     #<div style={{ width: '100vw', height: '100vh' }}>
+    │      ┬
+    │      ╰──
+────╯
+
+  Plugin: vite:oxc
+  File: /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/src/App.jsx
+11:54:37 AM [vite] Internal server error: Transform failed with 1 error:
+
+[PARSE_ERROR] Error: Invalid Character `<`
+    ╭─[ src/App.jsx:74:6 ]
+    │
+ 74 │     #<div style={{ width: '100vw', height: '100vh' }}>
+    │      ┬
+    │      ╰──
+────╯
+
+  Plugin: vite:oxc
+  File: /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/src/App.jsx
+      at transformWithOxc (file:///mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/vite/dist/node/chunks/node.js:3720:19)
+      at TransformPluginContext.transform (file:///mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/vite/dist/node/chunks/node.js:3788:26)
+      at EnvironmentPluginContainer.transform (file:///mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/vite/dist/node/chunks/node.js:30023:51)
+      at async loadAndTransform (file:///mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/vite/dist/node/chunks/node.js:24152:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/vite/dist/node/chunks/node.js:24961:20)
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ exit
+logout
+PS C:\Users\user>

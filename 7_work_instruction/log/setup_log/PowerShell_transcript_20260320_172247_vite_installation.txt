@@ -1,0 +1,211 @@
+**********************
+PowerShell transcript start
+Start time: 20260320172247
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 15364
+PSVersion: 7.5.4
+PSEdition: Core
+GitCommitId: 7.5.4
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260320_172247.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd Documents/projects/ping_rtt_prediction
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ nvm -v
+Command 'nvm' not found, but there are 14 similar ones.
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm -v
+Command 'npm' not found, but can be installed with:
+sudo apt install npm
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ node -v
+Command 'node' not found, but can be installed with:
+sudo apt install nodejs
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ source ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ nvm -v
+0.40.4
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm -v
+11.9.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ node -v
+v24.14.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npx -v
+11.9.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npx create-react-app network-ui
+Need to install the following packages:
+create-react-app@5.1.0
+Ok to proceed? (y)
+npm warn deprecated fstream-ignore@1.0.5: This package is no longer supported.
+npm warn deprecated uid-number@0.0.6: This package is no longer supported.
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated fstream@1.0.12: This package is no longer supported.
+npm warn deprecated tar@2.2.2: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+create-react-app is deprecated.
+
+You can find a list of up-to-date React frameworks on react.dev
+For more info see:https://react.dev/link/cra
+
+This error message will only be shown once per install.
+
+Creating a new React app in /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui.
+
+Installing packages. This might take a couple of minutes.
+Installing react, react-dom, and react-scripts with cra-template...
+
+
+added 1297 packages in 6m
+
+268 packages are looking for funding
+  run `npm fund` for details
+
+Initialized a git repository.
+
+Installing template dependencies using npm...
+
+added 17 packages, removed 1 package, and changed 1 package in 15s
+
+267 packages are looking for funding
+  run `npm fund` for details
+Removing template package using npm...
+
+
+removed 1 package, and audited 1313 packages in 8s
+
+267 packages are looking for funding
+  run `npm fund` for details
+
+26 vulnerabilities (9 low, 3 moderate, 14 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+Git commit not created Error: Command failed: git commit -m "Initialize project using Create React App"
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execSync (node:child_process:997:15)
+    at tryGitCommit (/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/react-scripts/scripts/init.js:62:5)
+    at module.exports (/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/react-scripts/scripts/init.js:350:25)
+    at [eval]:3:14
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:451:12
+    at [eval]-wrapper:6:24 {
+  status: 128,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 1341,
+  stdout: null,
+  stderr: null
+}
+Removing .git directory...
+
+Success! Created network-ui at /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui
+Inside that directory, you can run several commands:
+
+  npm start
+    Starts the development server.
+
+  npm run build
+    Bundles the app into static files for production.
+
+  npm test
+    Starts the test runner.
+
+  npm run eject
+    Removes this tool and copies build dependencies, configuration files
+    and scripts into the app directory. If you do this, you can’t go back!
+
+We suggest that you begin by typing:
+
+  cd network-ui
+  npm start
+
+Happy hacking!
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ create-react-app -v
+create-react-app: command not found
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ ls ~/.npm/_npx
+c67e74de0542c87c
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm create vite@latest network-ui -- --template react
+Need to install the following packages:
+create-vite@9.0.3
+Ok to proceed? (y)
+npm error canceled
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-03-20T14_35_55_205Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm create vite@latest network-ui -- --template react
+Need to install the following packages:
+create-vite@9.0.3
+Ok to proceed? (y) y
+
+> npx
+> "create-vite" network-ui --template react
+
+│
+◇  Install with npm and start now?
+│  Yes
+│
+◇  Scaffolding project in /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui...
+│
+◇  Installing dependencies with npm...
+
+added 151 packages, and audited 152 packages in 37s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+│
+◇  Starting dev server...
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 2189 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+^[[B^[[A^[[A^[[B^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm audit
+npm error code ENOLOCK
+npm error audit This command requires an existing lockfile.
+npm error audit Try creating one first with: npm i --package-lock-only
+npm error audit Original error: loadVirtual requires existing shrinkwrap file
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-03-20T14_46_16_991Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm run dev
+npm error code ENOENT
+npm error syscall open
+npm error path /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/package.json
+npm error errno -2
+npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-03-21T23_23_31_934Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ cd network-ui
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
+
+added 8 packages, and audited 160 packages in 9s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ exit
+logout
+PS C:\Users\user>

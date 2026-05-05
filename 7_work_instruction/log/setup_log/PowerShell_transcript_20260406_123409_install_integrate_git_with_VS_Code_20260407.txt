@@ -1,0 +1,494 @@
+**********************
+PowerShell transcript start
+Start time: 20260406123409
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 3812
+PSVersion: 7.6.0
+PSEdition: Core
+GitCommitId: 7.6.0
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260406_123409.txt
+PS C:\Users\user> cd “C:\Users\user\Documents\projects\ping_rtt_prediction”
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git init
+Reinitialized existing Git repository in C:/Users/user/Documents/projects/ping_rtt_prediction/.git/
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git log
+fatal: your current branch 'main' does not have any commits yet
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> pwd
+
+Path
+----
+C:\Users\user\Documents\projects\ping_rtt_prediction
+
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git log --oneline
+fatal: your current branch 'main' does not have any commits yet
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .env.example
+        .gitignore
+        .python-version
+        1_data/
+        6_scripts/
+        7_work_instruction/
+        calendar_api/
+        config/
+        ingest_ping_stream.py
+        logs/
+        manage.py
+        network-ui/
+        old/
+        requirements.in
+        requirements.txt
+        test_log_collector
+        venv/
+
+nothing added to commit but untracked files present (use "git add" to track)
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git add .
+warning: could not open directory 'venv/lib64/': Function not implemented
+warning: in the working copy of '.python-version', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '6_scripts/debug_structure.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '6_scripts/old/start_app_20260402.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '6_scripts/start_app.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/admin.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/apps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/migrations/0001_initial.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/tests.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/views.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/asgi.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/old/settings_20260405.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/old/urls_20260323.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/settings.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/urls.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/wsgi.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260326_131423.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260327_100411.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260327_101554.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260327_105216.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260328_101218.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260330_094312.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260331_095048.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260401_125020.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260403_100112.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260403_160658.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/ping_log_192.168.200.1_20260406_094743.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'manage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/eslint.config.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/public/icons.svg', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/App.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/App.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/assets/vite.svg', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/main.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App20260320.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App_20260322v1.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App_20260322v2.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App_20260323.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App_20260328_v1.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/old/App_not_horizontal_20260322.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/vite.config.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/app_OK_20250901_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/app_review.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20250902_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20250911_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20250913_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20250918_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20250922_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_OK_20251002_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_old.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_old2.5.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/features_old2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/20251028_1/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/20251028_1/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/20251028_1/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_mse.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/1.MSE_test/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_mse.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/20251028_3_batch64_nmid20_base3.7/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/20251028_3_batch64_nmid20_base3.7/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/20251028_3_batch64_nmid20_base3.7/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/20251028_3_batch64_nmid20_base3.7/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_1/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_1/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_1/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_10_batch16_nmid20/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_10_batch16_nmid20/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_10_batch16_nmid20/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_10_batch16_nmid20/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_2/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_2/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_2/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_2/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_3_batch64_nmid20/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_3_batch64_nmid20/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_3_batch64_nmid20/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_3_batch64_nmid20/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_4_batch8_nmid20/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_4_batch8_nmid20/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_4_batch8_nmid20/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_4_batch8_nmid20/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_5_batch64_nmid_32/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_5_batch64_nmid_32/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_5_batch64_nmid_32/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_5_batch64_nmid_32/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_6_batch8_nmid32/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_6_batch8_nmid32/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_6_batch8_nmid32/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_6_batch8_nmid32/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_7_batch16_nmid32/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_7_batch16_nmid32/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_7_batch16_nmid32/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_7_batch16_nmid32/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_8_batch32_nmid32/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_8_batch32_nmid32/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_8_batch32_nmid32/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_8_batch32_nmid32/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_9_batch32_nmid20/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_9_batch32_nmid20/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_9_batch32_nmid20/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251027_9_batch32_nmid20/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251028_1_batch64_nmid20/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251028_1_batch64_nmid20/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251028_1_batch64_nmid20/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/20251028_1_batch64_nmid20/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/old/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/2.Huber_test/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_huber.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/20251028_1/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/20251028_1/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/20251028_1/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_mae.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/3.MAE_test/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified_mae.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/features_OK_20251009_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/features_being_modified.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_3_n_mid10/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_3_n_mid10/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_3_n_mid10/train_pretrain_120_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_4_n_mid10_train30days/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_4_n_mid10_train30days/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_4_n_mid10_train30days/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_5_n_mid20_train30days/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251008_5_n_mid20_train30days/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_1_n_mid20_train30days_better!/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_1_n_mid20_train30days_better!/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_1_n_mid20_train30days_better!/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_2_n_mid10_train30days/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_2_n_mid10_train30days/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251009_2_n_mid10_train30days/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251010_1_n_mid10_train30days_not_bad/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251010_1_n_mid10_train30days_not_bad/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251010_1_n_mid10_train30days_not_bad/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_1_n_mid10_train30days_wrong/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_1_n_mid10_train30days_wrong/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_1_n_mid10_train30days_wrong/train_pretrain_nrnn10_nmid10_30days_base+residual_test_wrong.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_2_n_mid10_train30days_bad/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_2_n_mid10_train30days_bad/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_2_n_mid10_train30days_bad/train_pretrain_nrnn10_nmid10_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_3_nrnn30_nmid10_train30days/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_3_nrnn30_nmid10_train30days/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_3_nrnn30_nmid10_train30days/train_pretrain_nrnn30_nmid10_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_4_nrnn30_nmid20_train30days/train_pretrain_nrnn30_nmid20_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_5_nrnn30_nmid20_train30days/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_5_nrnn30_nmid20_train30days/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251014_5_nrnn30_nmid20_train30days/train_pretrain_nrnn30_nmid20_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251015_1_nrnn30_nmid20_train30days_epochshuffle/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251015_1_nrnn30_nmid20_train30days_epochshuffle/online_learning_test_epochshuffle.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251015_1_nrnn30_nmid20_train30days_epochshuffle/train_pretrain_nrnn30_nmid20_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251025_1_nrnn30_nmid20_30days_base+residual_test_being_modified/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251025_1_nrnn30_nmid20_30days_base+residual_test_being_modified/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251026_1_nrnn30_nmid20_30days_base+residual_test_being_modified/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/fit_model_20251026_1_nrnn30_nmid20_30days_base+residual_test_being_modified/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/online_learning.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/online_learning_test_20251025_1_no_epochshuffle_being_modfied.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/online_learning_test_epochshuffle.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/predicting.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/script_memo_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/features.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/flask_backend_20250919_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/features_OK_20250902_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/features_OK_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/features_OK_20250918_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_20250916_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250904_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250908_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250909_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250910_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250910_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250910_3.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250910_4.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250911_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250912_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250916_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250918_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250919_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_OK_20250919_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_org1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_org2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_org3.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/online_learning_rev20250904.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/train_pretrain_OK_20250903_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/old/train_pretrain_OK_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/online_learning.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/online_learning_OK_20250922_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/test/train_pretrain.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/train_pretrain_nrnn30_nmid20_30days_base+residual_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old#files_placed_just_under_ping_rtt_prediction/train_pretrain_nrnn30_nmid20_30days_base+residual_test_being_modified.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old_requirements/requirements_20260305.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/old_requirements/requirements_20260318.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_20250918_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250904_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250908_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250910_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250910_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250911_1_overlay.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250911_2_overlay.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250911_3.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250913_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250916_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250918_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250919_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250922_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250924_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_OK_20250930_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_broken1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_broken_20250904_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_org.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_org3.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_org4.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/online_learning_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/temp_20250908_1.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_120_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_30.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_30_test.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_OK_20250903_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_OK_20250913_1.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'old/train_pretrain_OK_20250913_2.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'requirements.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/activate', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/activate.csh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/activate.fish', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/django-admin', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/doesitcache', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/dotenv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/dumppdf.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/markdown-it', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/normalizer', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pdf2txt.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pdfplumber', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip-audit', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip-compile', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip-sync', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip3', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pip3.10', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pygmentize', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pypdfium2', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'venv/bin/pyproject-build', LF will be replaced by CRLF the next time Git touches it
+error: open("venv/bin/python"): Function not implemented
+error: unable to index file 'venv/bin/python'
+fatal: adding files failed
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .env.example
+        .gitignore
+        .python-version
+        1_data/
+        6_scripts/
+        7_work_instruction/
+        calendar_api/
+        config/
+        ingest_ping_stream.py
+        logs/
+        manage.py
+        network-ui/
+        old/
+        requirements.in
+        requirements.txt
+        test_log_collector
+        venv/
+
+nothing added to commit but untracked files present (use "git add" to track)
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git reset
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .env.example
+        .gitignore
+        6_scripts/
+        calendar_api/
+        config/
+        ingest_ping_stream.py
+        manage.py
+        network-ui/
+        requirements.in
+        requirements.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git add .
+warning: in the working copy of '6_scripts/debug_structure.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '6_scripts/start_app.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/admin.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/apps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/migrations/0001_initial.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/tests.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'calendar_api/views.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/asgi.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/settings.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/urls.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/wsgi.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'manage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/eslint.config.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/public/icons.svg', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/App.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/App.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/assets/vite.svg', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/src/main.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'network-ui/vite.config.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'requirements.txt', LF will be replaced by CRLF the next time Git touches it
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git status
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   .env.example
+        new file:   .gitignore
+        new file:   6_scripts/app_script_lesson_extraction.txt
+        new file:   6_scripts/debug_structure.txt
+        new file:   6_scripts/start_app.sh
+        new file:   6_scripts/test_fetch_save_lessons.py
+        new file:   6_scripts/test_get_daily_lessons.py
+        new file:   6_scripts/test_import_pdfplumber.py
+        new file:   calendar_api/__init__.py
+        new file:   calendar_api/admin.py
+        new file:   calendar_api/apps.py
+        new file:   calendar_api/migrations/0001_initial.py
+        new file:   calendar_api/migrations/__init__.py
+        new file:   calendar_api/models.py
+        new file:   calendar_api/serializers.py
+        new file:   calendar_api/tests.py
+        new file:   calendar_api/views.py
+        new file:   config/__init__.py
+        new file:   config/asgi.py
+        new file:   config/port_list_memo.txt
+        new file:   config/settings.py
+        new file:   config/urls.py
+        new file:   config/wsgi.py
+        new file:   ingest_ping_stream.py
+        new file:   manage.py
+        new file:   network-ui/.gitignore
+        new file:   network-ui/README.md
+        new file:   network-ui/eslint.config.js
+        new file:   network-ui/index.html
+        new file:   network-ui/package-lock.json
+        new file:   network-ui/package.json
+        new file:   network-ui/public/favicon.svg
+        new file:   network-ui/public/icons.svg
+        new file:   network-ui/src/#App.jsx_for_coding.txt
+        new file:   network-ui/src/App.css
+        new file:   network-ui/src/App.jsx
+        new file:   network-ui/src/assets/hero.png
+        new file:   network-ui/src/assets/react.svg
+        new file:   network-ui/src/assets/vite.svg
+        new file:   network-ui/src/index.css
+        new file:   network-ui/src/main.jsx
+        new file:   network-ui/vite.config.js
+        new file:   requirements.in
+        new file:   requirements.txt
+
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git commit -m "Initial commit: RTT Prediction app with React and Django"
+[main (root-commit) 21fbef8] Initial commit: RTT Prediction app with React and Django
+ 44 files changed, 4652 insertions(+)
+ create mode 100644 .env.example
+ create mode 100644 .gitignore
+ create mode 100644 6_scripts/app_script_lesson_extraction.txt
+ create mode 100644 6_scripts/debug_structure.txt
+ create mode 100644 6_scripts/start_app.sh
+ create mode 100644 6_scripts/test_fetch_save_lessons.py
+ create mode 100644 6_scripts/test_get_daily_lessons.py
+ create mode 100644 6_scripts/test_import_pdfplumber.py
+ create mode 100644 calendar_api/__init__.py
+ create mode 100644 calendar_api/admin.py
+ create mode 100644 calendar_api/apps.py
+ create mode 100644 calendar_api/migrations/0001_initial.py
+ create mode 100644 calendar_api/migrations/__init__.py
+ create mode 100644 calendar_api/models.py
+ create mode 100644 calendar_api/serializers.py
+ create mode 100644 calendar_api/tests.py
+ create mode 100644 calendar_api/views.py
+ create mode 100644 config/__init__.py
+ create mode 100644 config/asgi.py
+ create mode 100644 config/port_list_memo.txt
+ create mode 100644 config/settings.py
+ create mode 100644 config/urls.py
+ create mode 100644 config/wsgi.py
+ create mode 100644 ingest_ping_stream.py
+ create mode 100644 manage.py
+ create mode 100644 network-ui/.gitignore
+ create mode 100644 network-ui/README.md
+ create mode 100644 network-ui/eslint.config.js
+ create mode 100644 network-ui/index.html
+ create mode 100644 network-ui/package-lock.json
+ create mode 100644 network-ui/package.json
+ create mode 100644 network-ui/public/favicon.svg
+ create mode 100644 network-ui/public/icons.svg
+ create mode 100644 network-ui/src/#App.jsx_for_coding.txt
+ create mode 100644 network-ui/src/App.css
+ create mode 100644 network-ui/src/App.jsx
+ create mode 100644 network-ui/src/assets/hero.png
+ create mode 100644 network-ui/src/assets/react.svg
+ create mode 100644 network-ui/src/assets/vite.svg
+ create mode 100644 network-ui/src/index.css
+ create mode 100644 network-ui/src/main.jsx
+ create mode 100644 network-ui/vite.config.js
+ create mode 100644 requirements.in
+ create mode 100644 requirements.txt
+PS C:\Users\user\Documents\projects\ping_rtt_prediction> git log --oneline
+21fbef8 (HEAD -> main) Initial commit: RTT Prediction app with React and Django
+PS C:\Users\user\Documents\projects\ping_rtt_prediction>
+

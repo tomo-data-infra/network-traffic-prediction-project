@@ -1,0 +1,48 @@
+**********************
+PowerShell transcript start
+Start time: 20260318234325
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 7568
+PSVersion: 7.5.4
+PSEdition: Core
+GitCommitId: 7.5.4
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260318_234325.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 16774  100 16774    0     0   102k      0 --:--:-- --:--:-- --:--:--  102k
+=> Downloading nvm from git to '/home/user/.nvm'
+=> Cloning into '/home/user/.nvm'...
+remote: Enumerating objects: 405, done.
+remote: Counting objects: 100% (405/405), done.
+remote: Compressing objects: 100% (332/332), done.
+remote: Total 405 (delta 59), reused 191 (delta 45), pack-reused 0 (from 0)
+Receiving objects: 100% (405/405), 405.94 KiB | 13.09 MiB/s, done.
+Resolving deltas: 100% (59/59), done.
+* (HEAD detached at FETCH_HEAD)
+  master
+=> Compressing and cleaning up git repository
+
+=> Appending nvm source string to /home/user/.bashrc
+=> Appending bash_completion source string to /home/user/.bashrc
+=> Close and reopen your terminal to start using nvm or run the following to use it now:
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ source ~/.bashrc
+(python_3.6.15_env_nlp_bot_keras_tensorflow) user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user>

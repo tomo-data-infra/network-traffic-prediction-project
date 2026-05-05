@@ -1,0 +1,52 @@
+**********************
+PowerShell transcript start
+Start time: 20260326130519
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 39092
+PSVersion: 7.6.0
+PSEdition: Core
+GitCommitId: 7.6.0
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260326_130519.txt
+PS C:\Users\user> python "C:\Users\user\Documents\projects\ping_rtt_prediction\ingest_ping_stream.py"
+Traceback (most recent call last):
+  File "C:\Users\user\Documents\projects\ping_rtt_prediction\ingest_ping_stream.py", line 39, in <module>
+    conn = psycopg2.connect(DSN)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\anaconda3\Lib\site-packages\psycopg2\__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "127.0.0.1", port 5432 failed: fe_sendauth: no password supplied
+PS C:\Users\user> python "C:\Users\user\Documents\projects\ping_rtt_prediction\test_ingest_ping_stream.py"
+Traceback (most recent call last):
+  File "C:\Users\user\Documents\projects\ping_rtt_prediction\test_ingest_ping_stream.py", line 39, in <module>
+    conn = psycopg2.connect(DSN)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\anaconda3\Lib\site-packages\psycopg2\__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: fe_sendauth: no password supplie
+d
+PS C:\Users\user> python "C:\Users\user\Documents\projects\ping_rtt_prediction\test_ingest_ping_stream.py"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: fe_sendauth: no password supplie
+d
+PS C:\Users\user> python "C:\Users\user\Documents\projects\ping_rtt_prediction\test_ingest_ping_stream.py"
+
+PS C:\Users\user> TerminatingError(): "The pipeline has been stopped."
+>> TerminatingError(): "The pipeline has been stopped."
+PS C:\Users\user> exit
+**********************
+PowerShell transcript end
+End time: 20260326190732
+**********************

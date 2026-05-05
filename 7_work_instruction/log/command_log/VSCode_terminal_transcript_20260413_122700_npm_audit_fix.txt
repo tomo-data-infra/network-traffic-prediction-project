@@ -1,0 +1,44 @@
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm audit
+npm error code ENOLOCK
+npm error audit This command requires an existing lockfile.
+npm error audit Try creating one first with: npm i --package-lock-only
+npm error audit Original error: loadVirtual requires existing shrinkwrap file
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-04-13T03_13_48_392Z-debug-0.log       
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ cd network-ui
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit
+# npm audit report
+
+brace-expansion  <1.1.13
+Severity: moderate
+brace-expansion: Zero-step sequence causes process hang and memory exhaustion - https://github.com/advisories/GHSA-f886-m6hf-6m8v
+fix available via `npm audit fix`
+node_modules/brace-expansion
+
+picomatch  4.0.0 - 4.0.3
+Severity: high
+Picomatch: Method Injection in POSIX Character Classes causes incorrect Glob Matching - https://github.com/advisories/GHSA-3v7f-55p6-f55p
+Picomatch has a ReDoS vulnerability via extglob quantifiers - https://github.com/advisories/GHSA-c2c7-rcm5-vvqj        
+fix available via `npm audit fix`
+node_modules/picomatch
+
+vite  8.0.0 - 8.0.4
+Severity: high
+Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling - https://github.com/advisories/GHSA-4w7w-66w2-5vf9
+Vite: `server.fs.deny` bypassed with queries - https://github.com/advisories/GHSA-v2wj-q39q-566r
+Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket - https://github.com/advisories/GHSA-p9ff-h696-f583
+fix available via `npm audit fix`
+node_modules/vite
+
+3 vulnerabilities (1 moderate, 2 high)
+
+To address all issues, run:
+  npm audit fix
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit fix
+
+removed 1 package, changed 7 packages, and audited 159 packages in 7s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ 

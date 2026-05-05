@@ -32,6 +32,6 @@ Thumbs.db
 
 # --- Large/Legacy Data & Work Instructions ---
 1_data/
-7_work_instruction/
+# 7_work_instruction/
 old/
 test_log_collector

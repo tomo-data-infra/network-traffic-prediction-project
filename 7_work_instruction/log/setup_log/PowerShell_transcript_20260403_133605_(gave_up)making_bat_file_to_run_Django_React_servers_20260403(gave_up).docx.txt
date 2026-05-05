@@ -1,0 +1,232 @@
+**********************
+PowerShell transcript start
+Start time: 20260403133605
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 29272
+PSVersion: 7.6.0
+PSEdition: Core
+GitCommitId: 7.6.0
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260403_133605.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        1737  0.0  0.5  73880 42984 ?        S    02:39   0:01 python manage.py runserver
+user        1779  6.4  0.7 583864 60544 ?        Dl   02:39  42:06 /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/venv/bin/python manage.py runserver
+user        6315  0.0  0.0   4096  1920 pts/3    S+   13:36   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep vite
+user        6317  0.0  0.0   4088  1920 pts/3    S+   13:36   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State     Recv-Q    Send-Q         Local Address:Port         Peer Address:Port    Process
+LISTEN    0         4096           127.0.0.53%lo:53                0.0.0.0:*
+LISTEN    0         10                 127.0.0.1:8000              0.0.0.0:*        users:(("python",pid=1779,fd=3))
+LISTEN    0         200                127.0.0.1:5432              0.0.0.0:*
+LISTEN    0         1000          10.255.255.254:53                0.0.0.0:*
+LISTEN    0         4096              127.0.0.54:53                0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ wsl pkill -f "manage.py"
+Command 'wsl' not found, but can be installed with:
+sudo apt install wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pkill -f "manage.py"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        6360  0.0  0.0   4096  1920 pts/3    S+   13:43   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        6365  0.0  0.0   4096  1920 pts/3    S+   13:44   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pkill -f "vite"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        6377  0.0  0.0   4096  1920 pts/3    S+   13:46   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep vite
+user        6379  0.0  0.0   4088  1920 pts/3    S+   13:46   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pkill 9 -f "manage.py"
+pkill: only one pattern can be provided
+Try `pkill --help' for more information.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pkill -9 -f "manage.py"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ pkill -9 -f "vite"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        6414  0.0  0.0   4096  1920 pts/3    S+   13:54   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep vite
+user        6416  0.0  0.0   4088  1920 pts/3    S+   13:55   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ./start_app.sh
+-bash: ./start_app.sh: No such file or directory
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd Documents/projects/ping_rtt_prediction/6_scripts
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ./start_app.sh
+Starting Django Backend...
+Starting Vite Frontend...
+
+> network-ui@0.0.0 dev
+> vite
+
+
+  VITE v8.0.1  ready in 5088 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 03, 2026 - 05:06:41
+Django version 5.2.12, using settings 'config.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ss -ltnp
+State     Recv-Q    Send-Q         Local Address:Port         Peer Address:Port    Process
+LISTEN    0         4096           127.0.0.53%lo:53                0.0.0.0:*
+LISTEN    0         10                 127.0.0.1:8000              0.0.0.0:*        users:(("python",pid=6524,fd=3))
+LISTEN    0         200                127.0.0.1:5432              0.0.0.0:*
+LISTEN    0         1000          10.255.255.254:53                0.0.0.0:*
+LISTEN    0         4096              127.0.0.54:53                0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ [03/Apr/2026 05:07:28] "GET /api/event_sessions/ HTTP/1.1" 200 15507
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+[03/Apr/2026 05:07:28] "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+^C
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ss -ltnp
+State     Recv-Q    Send-Q         Local Address:Port         Peer Address:Port    Process
+LISTEN    0         4096           127.0.0.53%lo:53                0.0.0.0:*
+LISTEN    0         10                 127.0.0.1:8000              0.0.0.0:*        users:(("python",pid=6524,fd=3))
+LISTEN    0         200                127.0.0.1:5432              0.0.0.0:*
+LISTEN    0         1000          10.255.255.254:53                0.0.0.0:*
+LISTEN    0         4096              127.0.0.54:53                0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ps aux | grep vite
+user        6552  0.0  0.0   4088  1920 pts/3    S+   14:10   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ps aux | grep manage.py
+user        6484  0.4  0.5  73880 43416 pts/3    S    14:06   0:00 python manage.py runserver
+user        6524  7.6  0.7 601276 60972 pts/3    Dl   14:06   0:15 /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/venv/bin/python manage.py runserver
+user        6554  0.0  0.0   4096  1920 pts/3    S+   14:10   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ pkill -9 -f "manage.py"
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ pkill -9 -f "vite"
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ps aux | grep manage.py
+user        6564  0.0  0.0   4096  1920 pts/3    S+   14:10   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ ps aux | grep vite
+user        6566  0.0  0.0   4088  1920 pts/3    S+   14:10   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/6_scripts$ exit
+logout
+PS C:\Users\user> wsl --shutdown
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        1774  0.0  0.0   4096  1920 pts/0    S+   14:11   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep vite
+user        1776  0.0  0.0   4088  1920 pts/0    S+   14:11   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep manage.py
+user        1914  0.0  0.0   4096  1920 pts/0    S+   14:34   0:00 grep --color=auto manage.py
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ps aux | grep vite
+user        1916  0.0  0.0   4088  1920 pts/0    S+   14:34   0:00 grep --color=auto vite
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ss -ltnp
+State        Recv-Q        Send-Q                Local Address:Port               Peer Address:Port       Process
+LISTEN       0             200                       127.0.0.1:5432                    0.0.0.0:*
+LISTEN       0             4096                     127.0.0.54:53                      0.0.0.0:*
+LISTEN       0             4096                  127.0.0.53%lo:53                      0.0.0.0:*
+LISTEN       0             1000                 10.255.255.254:53                      0.0.0.0:*
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user> Test-NetConnection localhost -Port 8000
+WARNING: TCP connect to (::1 : 8000) failed
+WARNING: TCP connect to (127.0.0.1 : 8000) failed
+
+ComputerName           : localhost
+RemoteAddress          : ::1
+RemotePort             : 8000
+InterfaceAlias         : Loopback Pseudo-Interface 1
+SourceAddress          : ::1
+PingSucceeded          : True
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+PS C:\Users\user> Test-NetConnection localhost -Port 5173
+WARNING: TCP connect to (::1 : 5173) failed
+WARNING: TCP connect to (127.0.0.1 : 5173) failed
+
+ComputerName           : localhost
+RemoteAddress          : ::1
+RemotePort             : 5173
+InterfaceAlias         : Loopback Pseudo-Interface 1
+SourceAddress          : ::1
+PingSucceeded          : True
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+PS C:\Users\user>
+

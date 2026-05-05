@@ -1,0 +1,272 @@
+**********************
+PowerShell transcript start
+Start time: 20260319142547
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 26840
+PSVersion: 7.5.4
+PSEdition: Core
+GitCommitId: 7.5.4
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260319_142547.txt
+PS C:\Users\user> wsl
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Mar 19 14:25:56 JST 2026
+
+  System load:  0.16                Processes:             63
+  Usage of /:   1.2% of 1006.85GB   Users logged in:       0
+  Memory usage: 5%                  IPv4 address for eth0: 172.25.251.133
+  Swap usage:   0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+This message is shown once a day. To disable it please create the
+/home/user/.hushlogin file.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+[sudo] password for user:
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1838 kB]
+Get:6 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1542 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main Translation-en [337 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [177 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [16.7 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1567 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [319 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [386 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [33.0 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:16 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [7368 B]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [13.2 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+Get:19 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+Get:20 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [248 kB]
+Get:21 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [21.6 kB]
+Get:22 http://security.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [10.6 kB]
+Get:23 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [977 kB]
+Get:24 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [74.3 kB]
+Get:25 http://security.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [20.8 kB]
+Get:26 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
+Get:27 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [212 B]
+Fetched 7969 kB in 4s (1885 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+9 packages can be upgraded. Run 'apt list --upgradable' to see them.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ apt list --upgradable
+Listing... Done
+binutils-common/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+binutils-x86-64-linux-gnu/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+binutils/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+coreutils/noble-updates 9.4-3ubuntu6.2 amd64 [upgradable from: 9.4-3ubuntu6.1]
+libbinutils/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+libctf-nobfd0/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+libctf0/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+libgprofng0/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+libsframe1/noble-updates 2.42-4ubuntu2.10 amd64 [upgradable from: 2.42-4ubuntu2.8]
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt upgrade
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+The following upgrades have been deferred due to phasing:
+  binutils binutils-common binutils-x86-64-linux-gnu coreutils libbinutils libctf-nobfd0 libctf0 libgprofng0
+  libsframe1
+0 upgraded, 0 newly installed, 0 to remove and 9 not upgraded.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+9 packages can be upgraded. Run 'apt list --upgradable' to see them.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ source ~/.bashrc
+(python_3.6.15_env_nlp_bot_keras_tensorflow) user@DESKTOP-KTE041O:/mnt/c/Users/user$ conda deactivate
+conda: command not found
+(python_3.6.15_env_nlp_bot_keras_tensorflow) user@DESKTOP-KTE041O:/mnt/c/Users/user$ deactivate conda
+pyenv-virtualenv: deactivate must be sourced. Run 'source deactivate' instead of 'deactivate'
+(python_3.6.15_env_nlp_bot_keras_tensorflow) user@DESKTOP-KTE041O:/mnt/c/Users/user$ deactivate
+pyenv-virtualenv: deactivate must be sourced. Run 'source deactivate' instead of 'deactivate'
+(python_3.6.15_env_nlp_bot_keras_tensorflow) user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ ls -a
+ .
+ ..
+ .cache
+ .conda
+ .condarc
+ .continuum
+ .idlerc
+ .ipynb_checkpoints
+ .ipython
+ .jupyter
+ .keras
+ .matplotlib
+ .packettracer
+ .python-version
+ .spyder-py3
+ .ssh
+ .vscode
+ AppData
+'Application Data'
+'Cisco Packet Tracer 8.2.1'
+ Contacts
+ Cookies
+ Desktop
+ Documents
+ Downloads
+ Favorites
+ IntelGraphicsProfiles
+ Jedi
+ Links
+'Local Settings'
+ Music
+'My Documents'
+ NTUSER.DAT
+ NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TM.blf
+ NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000001.regtrans-ms
+ NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000002.regtrans-ms
+ NetHood
+ OneDrive
+ Pictures
+ PrintHood
+ Python
+ Recent
+'Saved Games'
+ Searches
+ SendTo
+ Templates
+ Test_2023_1
+ Test_App
+ Untitled.ipynb
+ Untitled1.ipynb
+ Videos
+ anaconda3
+ iCloudDrive
+ kernel.json
+ ntuser.dat.LOG1
+ ntuser.dat.LOG2
+ ntuser.ini
+'スタート メニュー'
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type pyenv
+pyenv is hashed (/home/user/.pyenv/bin/pyenv)
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ echo $PATH
+/home/user/.pyenv/shims:/home/user/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/PowerShell/7:/mnt/c/Program Files (x86)/VMware/VMware Player/bin/:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Users/user/anaconda3:/mnt/c/Users/user/anaconda3/Scripts:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Tailscale/:/mnt/c/Program Files/rclone:/mnt/c/Program Files/PowerShell/7/:/mnt/c/Program Files/ngrok:/mnt/c/Program Files/PowerShell/7:/mnt/c/Program Files (x86)/VMware/VMware Player/bin/:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Users/user/anaconda3:/mnt/c/Users/user/anaconda3/Scripts:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PowerShell/7/:/mnt/c/Program Files/Tailscale/:/mnt/c/Users/user/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/user/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Program Files/PostgreSQL/17/bin:/mnt/c/Users/user/anaconda3:/mnt/c/Users/user/anaconda3/envs/Test_2023:/snap/bin
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type pyenv
+pyenv is hashed (/home/user/.pyenv/bin/pyenv)
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ source ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python -version
+Unknown option: -e
+usage: /home/user/.pyenv/versions/python_3.6.15_env_nlp_bot_keras_tensorflow/bin/python [option] ... [-c cmd | -m mod | file | -] [arg] ...
+Try `python -h' for more information.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python --version
+Python 3.6.15
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python -V
+Python 3.6.15
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user> wsl
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.6.87.2-microsoft-standard-WSL2 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Fri Mar 20 13:21:39 JST 2026
+
+  System load:  0.0                 Processes:             30
+  Usage of /:   1.2% of 1006.85GB   Users logged in:       1
+  Memory usage: 4%                  IPv4 address for eth0: 172.25.251.133
+  Swap usage:   0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+This message is shown once a day. To disable it please create the
+/home/user/.hushlogin file.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python --version
+Python 3.6.15
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ python -V
+Python 3.6.15
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type pyenv
+pyenv is hashed (/home/user/.pyenv/bin/pyenv)
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ source ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type pyenv
+pyenv is a function
+pyenv ()
+{
+    local command=${1:-};
+    [ "$#" -gt 0 ] && shift;
+    case "$command" in
+        activate | deactivate | rehash | shell)
+            eval "$(pyenv "sh-$command" "$@")"
+        ;;
+        *)
+            command pyenv "$command" "$@"
+        ;;
+    esac
+}
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bash_profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bash_login
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bashrc
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bash_profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bash_profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nano ~/.bash_profile
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type pyenv
+pyenv is a function
+pyenv ()
+{
+    local command=${1:-};
+    [ "$#" -gt 0 ] && shift;
+    case "$command" in
+        activate | deactivate | rehash | shell)
+            eval "$(pyenv "sh-$command" "$@")"
+        ;;
+        *)
+            command pyenv "$command" "$@"
+        ;;
+    esac
+}
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ type aaaa
+-bash: type: aaaa: not found
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user>
+
