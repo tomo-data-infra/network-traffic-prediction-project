@@ -16,7 +16,8 @@
     "@fullcalendar/timegrid": "^6.1.20",
     "dotenv": "^17.4.2",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

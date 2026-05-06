@@ -1,0 +1,128 @@
+**********************
+PowerShell transcript start
+Start time: 20260506203820
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 25332
+PSVersion: 7.6.1
+PSEdition: Core
+GitCommitId: 7.6.1
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260506_203820.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ echo $NVM_DIR
+/home/user/.nvm
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ node -v
+v24.14.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ nvm -v
+0.40.4
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ npm -v
+11.9.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ npm audit
+npm error code ENOLOCK
+npm error audit This command requires an existing lockfile.
+npm error audit Try creating one first with: npm i --package-lock-only
+npm error audit Original error: loadVirtual requires existing shrinkwrap file
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-05-06T11_47_55_440Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd /mnt/c/Users/user/Documents/projects/ping_rtt_prediction
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ echo $NVM_DIR
+/home/user/.nvm
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ node -v
+v24.14.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ nvm -v
+0.40.4
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm -v
+11.9.0
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ npm audit
+npm error code ENOLOCK
+npm error audit This command requires an existing lockfile.
+npm error audit Try creating one first with: npm i --package-lock-only
+npm error audit Original error: loadVirtual requires existing shrinkwrap file
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-05-06T11_50_32_884Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ cd network-ui
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit
+# npm audit report
+
+postcss  <8.5.10
+Severity: moderate
+PostCSS has XSS via Unescaped </style> in its CSS Stringify Output - https://github.com/advisories/GHSA-qx2v-qp2m-jg93
+fix available via `npm audit fix`
+node_modules/postcss
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit fix
+
+changed 1 package, and audited 161 packages in 2s
+
+39 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm audit
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm install recharts
+
+added 40 packages, and audited 201 packages in 49s
+
+41 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npt update
+Command 'npt' not found, did you mean:
+  command 'opt' from deb llvm (1:17.0-58~exp1)
+  command 'gpt' from deb gpt (1.1-7)
+  command 'apt' from deb apt (2.8.3)
+  command 'nut' from deb nutsqlite (2.0.6-4)
+  command 'npx' from deb npm (9.2.0~ds1-2)
+  command 'dpt' from deb pkg-perl-tools (0.76)
+  command 'npm' from deb npm (9.2.0~ds1-2)
+  command 'pt' from deb tcllib (1.21+dfsg-1)
+  command 'net' from deb samba-common-bin (2:4.19.5+dfsg-4ubuntu9.4)
+  command 'ppt' from deb bsdgames (2.17-30)
+  command 'nft' from deb nftables (1.0.9-1ubuntu0.1)
+Try: sudo apt install <deb name>
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ npm update
+npm error code EACCES
+npm error syscall rename
+npm error path /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/binding-linux-x64-gnu
+npm error dest /mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/.binding-linux-x64-gnu-ecfKf7FQ
+npm error errno -13
+npm error Error: EACCES: permission denied, rename '/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/binding-linux-x64-gnu' -> '/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/.binding-linux-x64-gnu-ecfKf7FQ'
+npm error     at async Object.rename (node:internal/fs/promises:782:10)
+npm error     at async moveFile (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/fs/lib/move-file.js:30:5)
+npm error     at async Promise.allSettled (index 6)
+npm error     at async #reifyPackages (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:309:11)
+npm error     at async Arborist.reify (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:121:5)
+npm error     at async Update.exec (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/commands/update.js:64:5)
+npm error     at async Npm.exec (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/npm.js:208:9)
+npm error     at async module.exports (/home/user/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/cli/entry.js:67:5) {
+npm error   errno: -13,
+npm error   code: 'EACCES',
+npm error   syscall: 'rename',
+npm error   path: '/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/binding-linux-x64-gnu',
+npm error   dest: '/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui/node_modules/@rolldown/.binding-linux-x64-gnu-ecfKf7FQ'
+npm error }
+npm error
+npm error The operation was rejected by your operating system.
+npm error It is likely you do not have the permissions to access this file as the current user
+npm error
+npm error If you believe this might be a permissions issue, please double-check the
+npm error permissions of the file and its containing directories, or try running
+npm error the command again as root/Administrator.
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2026-05-06T12_24_47_400Z-debug-0.log
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/network-ui$ exit
+logout
+PS C:\Users\user>
