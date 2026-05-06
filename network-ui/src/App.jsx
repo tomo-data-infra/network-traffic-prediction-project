@@ -67,11 +67,17 @@ function App() {
 
   const handleEventClick = (clickInfo) => {
     if (!isAuthenticated) return;
+
+    // FullCalendar's startStr/endStr usually works, 
+    // but let's ensure they are in a format datetime-local understands (YYYY-MM-DDTHH:mm)
+    const start = clickInfo.event.startStr.substring(0, 16);
+    const end = clickInfo.event.endStr.substring(0, 16);
+
     openModal('edit', {
       id: clickInfo.event.id,
       title: clickInfo.event.title,
-      start: clickInfo.event.startStr,
-      end: clickInfo.event.endStr,
+      start: start,
+      end: end,
       category: clickInfo.event.extendedProps.category,
       devices: clickInfo.event.extendedProps.devices
     });
@@ -80,19 +86,21 @@ function App() {
   const handleSubmitEvent = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
     const eventData = {
       event_name: formData.get('title'),
       expected_devices: parseInt(formData.get('devices')),
-      session_category: formData.get('category')
+      session_category: formData.get('category'),
+      start_ts: formData.get('start_ts'), // Pull updated time from form
+      end_ts: formData.get('end_ts')      // Pull updated time from form
     };
 
     try {
       if (modalState.mode === 'create') {
-        const payload = { ...eventData, start_ts: modalState.data.start, end_ts: modalState.data.end };
         await fetch('http://localhost:8000/api/event_sessions/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(eventData),
         });
       } else {
         await fetch(`http://localhost:8000/api/event_sessions/${modalState.data.id}/`, {
@@ -138,7 +146,8 @@ function App() {
       {/* --- Event Modal --- */}
       {modalState.show && (
         <div className="modal-backdrop">
-          <form className="modal-content" onSubmit={handleSubmitEvent}>
+          <form className="modal-content" onSubmit={handleSubmitEvent}
+          key={modalState.data?.id || modalState.data?.start}>
             <h3>{modalState.mode === 'create' ? 'Add Event' : 'Edit Event'}</h3>
             
             {/* 1. Event Title */}
@@ -150,7 +159,7 @@ function App() {
             <input 
               name="start_ts" 
               type="datetime-local" 
-              defaultValue={modalState.data?.start?.substring(0, 16)} 
+              defaultValue={modalState.data?.start} 
               required 
             />
 
@@ -159,7 +168,7 @@ function App() {
             <input 
               name="end_ts" 
               type="datetime-local" 
-              defaultValue={modalState.data?.end?.substring(0, 16)} 
+              defaultValue={modalState.data?.end} 
               required 
             />
 
@@ -169,6 +178,7 @@ function App() {
             
             <label>Category</label>
             <select name="category" defaultValue={modalState.data?.category || 'video_session'}>
+              {/* The 'value' must be EXACTLY what the DB sends (e.g., 'video_session') */}
               <option value="video_session">Video Session</option>
               <option value="system_update">System Update</option>
             </select>
