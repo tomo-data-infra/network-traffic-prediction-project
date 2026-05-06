@@ -1,0 +1,337 @@
+**********************
+PowerShell transcript start
+Start time: 20260325135545
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 7088
+PSVersion: 7.6.0
+PSEdition: Core
+GitCommitId: 7.6.0
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260325_135545.txt
+PowerShell 7.6.0
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260325_135545.txt
+PS C:\Users\user> pg_dump --version
+pg_dump (PostgreSQL) 17.6
+PS C:\Users\user> pg_dump -U postgres test_log_collector > C:\temp\backup_20260325.sql
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+[sudo] password for user:
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:4 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1546 kB]
+Hit:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1846 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1166 kB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/universe Translation-en [225 kB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [20.8 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1571 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [32.2 kB]
+Fetched 6659 kB in 4s (1852 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt install postgresql postgresql-contrib
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libcommon-sense-perl libjson-perl libjson-xs-perl libllvm17t64 libpq5 libtypes-serialiser-perl postgresql-16
+  postgresql-client-16 postgresql-client-common postgresql-common ssl-cert sysstat
+Suggested packages:
+  postgresql-doc postgresql-doc-16 isag
+The following NEW packages will be installed:
+  libcommon-sense-perl libjson-perl libjson-xs-perl libllvm17t64 libpq5 libtypes-serialiser-perl postgresql
+  postgresql-16 postgresql-client-16 postgresql-client-common postgresql-common postgresql-contrib ssl-cert sysstat
+0 upgraded, 14 newly installed, 0 to remove and 0 not upgraded.
+Need to get 44.1 MB of archives.
+After this operation, 177 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libjson-perl all 4.10000-1 [81.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client-common all 257build1.1 [36.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 ssl-cert all 1.1.2ubuntu1 [17.8 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-common all 257build1.1 [161 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 sysstat amd64 12.6.1-2 [489 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 libcommon-sense-perl amd64 3.75-3build3 [20.4 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 libtypes-serialiser-perl all 1.01-1 [11.6 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libjson-xs-perl amd64 4.040-0ubuntu0.24.04.1 [83.7 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/main amd64 libllvm17t64 amd64 1:17.0.6-9ubuntu1 [26.2 MB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpq5 amd64 16.13-0ubuntu0.24.04.1 [146 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client-16 amd64 16.13-0ubuntu0.24.04.1 [1298 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-16 amd64 16.13-0ubuntu0.24.04.1 [15.6 MB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql all 16+257build1.1 [11.6 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-contrib all 16+257build1.1 [11.6 kB]
+Fetched 44.1 MB in 5s (8893 kB/s)
+Preconfiguring packages ...
+Selecting previously unselected package libjson-perl.
+(Reading database ... 53130 files and directories currently installed.)
+Preparing to unpack .../00-libjson-perl_4.10000-1_all.deb ...
+Unpacking libjson-perl (4.10000-1) ...
+Selecting previously unselected package postgresql-client-common.
+Preparing to unpack .../01-postgresql-client-common_257build1.1_all.deb ...
+Unpacking postgresql-client-common (257build1.1) ...
+Selecting previously unselected package ssl-cert.
+Preparing to unpack .../02-ssl-cert_1.1.2ubuntu1_all.deb ...
+Unpacking ssl-cert (1.1.2ubuntu1) ...
+Selecting previously unselected package postgresql-common.
+Preparing to unpack .../03-postgresql-common_257build1.1_all.deb ...
+Adding 'diversion of /usr/bin/pg_config to /usr/bin/pg_config.libpq-dev by postgresql-common'
+Unpacking postgresql-common (257build1.1) ...
+Selecting previously unselected package sysstat.
+Preparing to unpack .../04-sysstat_12.6.1-2_amd64.deb ...
+Unpacking sysstat (12.6.1-2) ...
+Selecting previously unselected package libcommon-sense-perl:amd64.
+Preparing to unpack .../05-libcommon-sense-perl_3.75-3build3_amd64.deb ...
+Unpacking libcommon-sense-perl:amd64 (3.75-3build3) ...
+Selecting previously unselected package libtypes-serialiser-perl.
+Preparing to unpack .../06-libtypes-serialiser-perl_1.01-1_all.deb ...
+Unpacking libtypes-serialiser-perl (1.01-1) ...
+Selecting previously unselected package libjson-xs-perl.
+Preparing to unpack .../07-libjson-xs-perl_4.040-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libjson-xs-perl (4.040-0ubuntu0.24.04.1) ...
+Selecting previously unselected package libllvm17t64:amd64.
+Preparing to unpack .../08-libllvm17t64_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking libllvm17t64:amd64 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package libpq5:amd64.
+Preparing to unpack .../09-libpq5_16.13-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libpq5:amd64 (16.13-0ubuntu0.24.04.1) ...
+Selecting previously unselected package postgresql-client-16.
+Preparing to unpack .../10-postgresql-client-16_16.13-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking postgresql-client-16 (16.13-0ubuntu0.24.04.1) ...
+Selecting previously unselected package postgresql-16.
+Preparing to unpack .../11-postgresql-16_16.13-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking postgresql-16 (16.13-0ubuntu0.24.04.1) ...
+Selecting previously unselected package postgresql.
+Preparing to unpack .../12-postgresql_16+257build1.1_all.deb ...
+Unpacking postgresql (16+257build1.1) ...
+Selecting previously unselected package postgresql-contrib.
+Preparing to unpack .../13-postgresql-contrib_16+257build1.1_all.deb ...
+Unpacking postgresql-contrib (16+257build1.1) ...
+Setting up postgresql-client-common (257build1.1) ...
+Setting up libpq5:amd64 (16.13-0ubuntu0.24.04.1) ...
+Setting up libcommon-sense-perl:amd64 (3.75-3build3) ...
+Setting up libllvm17t64:amd64 (1:17.0.6-9ubuntu1) ...
+Setting up ssl-cert (1.1.2ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/ssl-cert.service → /usr/lib/systemd/system/ssl-cert.service.
+Setting up libtypes-serialiser-perl (1.01-1) ...
+Setting up libjson-perl (4.10000-1) ...
+Setting up sysstat (12.6.1-2) ...
+
+Creating config file /etc/default/sysstat with new version
+update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+Setting up libjson-xs-perl (4.040-0ubuntu0.24.04.1) ...
+Setting up postgresql-client-16 (16.13-0ubuntu0.24.04.1) ...
+update-alternatives: using /usr/share/postgresql/16/man/man1/psql.1.gz to provide /usr/share/man/man1/psql.1.gz (psql.1.gz) in auto mode
+Setting up postgresql-common (257build1.1) ...
+
+Creating config file /etc/postgresql-common/createcluster.conf with new version
+Building PostgreSQL dictionaries from installed myspell/hunspell packages...
+Removing obsolete dictionary files:
+Created symlink /etc/systemd/system/multi-user.target.wants/postgresql.service → /usr/lib/systemd/system/postgresql.service.
+Setting up postgresql-16 (16.13-0ubuntu0.24.04.1) ...
+Creating new PostgreSQL cluster 16/main ...
+/usr/lib/postgresql/16/bin/initdb -D /var/lib/postgresql/16/main --auth-local peer --auth-host scram-sha-256 --no-instructions
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C.UTF-8".
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+fixing permissions on existing directory /var/lib/postgresql/16/main ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... Asia/Tokyo
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+Setting up postgresql-contrib (16+257build1.1) ...
+Setting up postgresql (16+257build1.1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql start
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "CREATE DATABASE log_collector;"
+CREATE DATABASE
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  Peer authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  Peer authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql log_collector < /mnt/c/temp/backup_20260325.sql
+SET
+SET
+SET
+ERROR:  unrecognized configuration parameter "transaction_timeout"
+SET
+SET
+ set_config
+------------
+
+(1 row)
+
+SET
+SET
+SET
+SET
+CREATE TYPE
+ALTER TYPE
+SET
+SET
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+ALTER SEQUENCE
+ALTER TABLE
+ALTER TABLE
+COPY 0
+COPY 3234161
+COPY 2
+ setval
+--------
+      1
+(1 row)
+
+ setval
+--------
+    171
+(1 row)
+
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql --version
+psql (PostgreSQL) 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1)
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql --V
+/usr/lib/postgresql/16/bin/psql: unrecognized option '--V'
+psql: hint: Try "psql --help" for more information.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql --v
+/usr/lib/postgresql/16/bin/psql: option '--v' is ambiguous; possibilities: '--variable' '--version'
+psql: hint: Try "psql --help" for more information.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -d log_collector -c "\dt"
+             List of relations
+ Schema |      Name      | Type  |  Owner
+--------+----------------+-------+----------
+ public | event_sessions | table | postgres
+ public | ping_logs      | table | postgres
+ public | targets        | table | postgres
+(3 rows)
+
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  Peer authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -d log_collector -c "SELECT count(*) FROM ping_logs;"
+[sudo] password for user:
+  count
+---------
+ 3234161
+(1 row)
+
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+[sudo] password for user:
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql restart
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -d log_collector -c "SELECT count(*) FROM ping_logs;"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: fe_sendauth: no password supplied
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql
+[sudo] password for user:
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: fe_sendauth: no password supplied
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+[sudo] password for user:
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql restart
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+Password for user postgres:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "postgres"
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql restart
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'temp_pass';"
+ALTER ROLE
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql restart
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql (16.13 (Ubuntu 16.13-0ubuntu0.24.04.1))
+Type "help" for help.
+
+log_collector=# \q
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo -u postgres psql
+Password for user postgres:
+psql (16.13 (Ubuntu 16.13-0ubuntu0.24.04.1))
+Type "help" for help.
+
+postgres=# \password postgres
+Enter new password for user "postgres":
+Enter it again:
+postgres=# \q
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql (16.13 (Ubuntu 16.13-0ubuntu0.24.04.1))
+Type "help" for help.
+
+log_collector=# \q
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo nano /etc/postgresql/16/main/pg_hba.conf
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo service postgresql restart
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user>

@@ -140,12 +140,39 @@ function App() {
         <div className="modal-backdrop">
           <form className="modal-content" onSubmit={handleSubmitEvent}>
             <h3>{modalState.mode === 'create' ? 'Add Event' : 'Edit Event'}</h3>
+            
+            {/* 1. Event Title */}
+            <label>Event Name</label>
             <input name="title" defaultValue={modalState.data?.title} placeholder="Title" required />
-            <input name="devices" type="number" defaultValue={modalState.data?.devices || 1} placeholder="Devices" />
+
+            {/* 2. Start Time (New) */}
+            <label>Start Time</label>
+            <input 
+              name="start_ts" 
+              type="datetime-local" 
+              defaultValue={modalState.data?.start?.substring(0, 16)} 
+              required 
+            />
+
+            {/* 3. End Time (New) */}
+            <label>End Time</label>
+            <input 
+              name="end_ts" 
+              type="datetime-local" 
+              defaultValue={modalState.data?.end?.substring(0, 16)} 
+              required 
+            />
+
+            {/* 4. Devices & Category */}
+            <label>Number of Devices</label>
+            <input name="devices" type="number" defaultValue={modalState.data?.devices || 1} />
+            
+            <label>Category</label>
             <select name="category" defaultValue={modalState.data?.category || 'video_session'}>
               <option value="video_session">Video Session</option>
               <option value="system_update">System Update</option>
             </select>
+
             <div className="modal-actions">
               <button type="button" onClick={closeModal}>Cancel</button>
               {modalState.mode === 'edit' && (

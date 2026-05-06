@@ -92,6 +92,7 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD, # Environment variable 
         'HOST': 'localhost',
         'PORT': '5432',  # Leave empty
+        'TIME_ZONE': 'Asia/Tokyo',
     }
 }
 
@@ -120,7 +121,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
 
