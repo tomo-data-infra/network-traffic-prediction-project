@@ -17,37 +17,37 @@ function App() {
   const [modalState, setModalState] = useState({ show: false, mode: 'create', data: null });
   const [authError, setAuthError] = useState('');
   
-  // --- Refs ---  
+  // --- Refs --- 
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
-  const PASSWORD = import.meta.env.VITE_PASSWORD;
+  const DJANGO_URL = "http://localhost:8000/api"; // Your Django Server
 
-  // --- 1. Fetch Traffic Data (For Dashboard) ---
+  // FETCH TRAFFIC FROM DJANGO
   const fetchTraffic = async (start, end) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/ping_data?start=${start}&end=${end}`);
-      const data = await response.json();
+      const res = await fetch(`${DJANGO_URL}/ping_data/?start=${start}&end=${end}`);
+      const data = await res.json();
       const chartPoints = data.times.map((t, i) => ({
         time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        rtt: data.features[i] 
+        rtt: data.features[i][0] 
       }));
       setPingData(chartPoints);
     } catch (err) {
-      console.error("Traffic fetch error:", err);
+      console.error("Django Traffic Error:", err);
     }
   };
 
-  // --- 2. Fetch Events (Standard + Background Layers) ---
+  // FETCH EVENTS FROM DJANGO
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/event_sessions/');
-      const data = await response.json();
+      const res = await fetch(`${DJANGO_URL}/event_sessions/`);
+      const data = await res.json();
       const allEntries = [];
-      
+
       data.forEach(evt => {
         // Interactive Foreground Event
         allEntries.push({
-          id: evt.session_id,
+          id: evt.id,
           title: evt.event_name,
           start: evt.start_ts,
           end: evt.end_ts,
@@ -65,8 +65,8 @@ function App() {
         });
       });
       setEvents(allEntries);
-    } catch (error) {
-      console.error('Error fetching events:', error);
+    } catch (err) {
+      console.error("Django Events Error:", err);
     }
   };
 
@@ -77,12 +77,11 @@ function App() {
   // --- Handlers ---
   const switchToDashboard = () => {
     const now = new Date();
-    const start = new Date(now - 30 * 60000).toISOString();
-    const end = new Date(now + 30 * 60000).toISOString();
-    fetchTraffic(start, end);
+    fetchTraffic(new Date(now - 30*60000).toISOString(), new Date(now + 30*60000).toISOString());
     setViewMode('dashboard');
   };
 
+  // UI RENDER HELPERS
   const handleAuth = (e) => {
     e.preventDefault();
     if (passwordRef.current.value === PASSWORD) {
@@ -134,17 +133,17 @@ function App() {
 
   // --- Render Helpers (Defined ABOVE the main return) ---
   const renderDashboard = () => (
-    <div className="dashboard-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2>Independent Traffic Dashboard</h2>
+    <div className="dashboard-view">
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <h2>Real-Time Traffic Dashboard (Django API)</h2>
         <button onClick={() => setViewMode('calendar')}>Back to Calendar</button>
       </div>
-      <div style={{ height: '500px', background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+      <div style={{ height: '450px', background: '#fff', padding: '20px', marginTop: '20px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pingData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="time" />
-            <YAxis label={{ value: 'RTT (ms)', angle: -90, position: 'insideLeft' }} />
+            <YAxis />
             <Tooltip />
             <Line type="monotone" dataKey="rtt" stroke="#3b82f6" strokeWidth={3} dot={false} />
           </LineChart>
@@ -166,32 +165,27 @@ function App() {
       }}
       customButtons={{
         realtimeBtn: {
-          text: 'Real Time',
+          text: 'Real Time Monitor',
           click: switchToDashboard
         }
       }}
       selectable={isAuthenticated}
-      select={(info) => openModal('create', { start: info.startStr, end: info.endStr })}
-      eventClick={(info) => {
-        if (!isAuthenticated) return;
-        openModal('edit', {
+      eventClick={(info) => setModalState({ show: true, mode: 'edit', data: {
           id: info.event.id,
-          title: info.event.title,
-          start: info.event.startStr.substring(0, 16),
-          end: info.event.endStr.substring(0, 16),
+          title: info.event.title, 
+          start: info.event.startStr.substring(0,16),
+          end: info.event.endStr.substring(0,16),
           category: info.event.extendedProps.category,
           devices: info.event.extendedProps.devices
-        });
-      }}
-      height="85vh"
+      }})}
     />
   );
 
   // --- Main Return ---
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Network Event Manager</h1>
-      
+      <h1>Network Traffic Monitor</h1>
+
       {/* --- Auth Screen Overlay --- */}
       {!isAuthenticated && (
         <form onSubmit={handleAuth} className="auth-overlay">
