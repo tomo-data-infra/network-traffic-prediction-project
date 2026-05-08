@@ -21,6 +21,7 @@ function App() {
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
   const DJANGO_URL = "http://localhost:8000/api"; // Your Django Server
+  const PASSWORD = import.meta.env.VITE_PASSWORD;
 
   // FETCH TRAFFIC FROM DJANGO
   const fetchTraffic = async (start, end) => {
@@ -170,14 +171,19 @@ function App() {
         }
       }}
       selectable={isAuthenticated}
-      eventClick={(info) => setModalState({ show: true, mode: 'edit', data: {
+      select={(info) => openModal('create', { start: info.startStr, end: info.endStr })}
+      eventClick={(info) => {
+        if (!isAuthenticated) return;
+        openModal('edit', {
           id: info.event.id,
-          title: info.event.title, 
-          start: info.event.startStr.substring(0,16),
-          end: info.event.endStr.substring(0,16),
+          title: info.event.title,
+          start: info.event.startStr.substring(0, 16),
+          end: info.event.endStr.substring(0, 16),
           category: info.event.extendedProps.category,
           devices: info.event.extendedProps.devices
-      }})}
+        });
+      }}
+      height="85vh"
     />
   );
 
