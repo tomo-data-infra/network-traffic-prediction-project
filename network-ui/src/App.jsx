@@ -16,7 +16,11 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [modalState, setModalState] = useState({ show: false, mode: 'create', data: null });
   const [authError, setAuthError] = useState('');
-  
+  const [range, setRange] = useState({
+    start: new Date(new Date() - 30 * 60000).toISOString().substring(0, 16),
+    end: new Date(new Date() + 30 * 60000).toISOString().substring(0, 16)
+  });
+
   // --- Refs --- 
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
@@ -73,7 +77,14 @@ function App() {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+    // Force a small delay to ensure FullCalendar recalculates its size
+    if (viewMode === 'calendar' && calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      setTimeout(() => {
+        calendarApi.updateSize();
+      }, 100);
+    }
+  }, [viewMode]); // Trigger every time we switch back to calendar
 
   // --- Handlers ---
   const switchToDashboard = () => {
@@ -135,11 +146,29 @@ function App() {
   // --- Render Helpers (Defined ABOVE the main return) ---
   const renderDashboard = () => (
     <div className="dashboard-view">
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <h2>Real-Time Traffic Dashboard (Django API)</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+        <h2>Traffic Analysis</h2>
+        
+        {/* Manual Range Controls */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input 
+            type="datetime-local" 
+            value={range.start} 
+            onChange={(e) => setRange({ ...range, start: e.target.value })}
+          />
+          <span>to</span>
+          <input 
+            type="datetime-local" 
+            value={range.end} 
+            onChange={(e) => setRange({ ...range, end: e.target.value })}
+          />
+          <button onClick={() => fetchTraffic(range.start, range.end)}>Update Range</button>
+        </div>
+
         <button onClick={() => setViewMode('calendar')}>Back to Calendar</button>
       </div>
-      <div style={{ height: '450px', background: '#fff', padding: '20px', marginTop: '20px' }}>
+
+      <div style={{ height: '450px', background: '#fff', padding: '20px', marginTop: '20px', borderRadius: '8px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pingData}>
             <CartesianGrid strokeDasharray="3 3" />
