@@ -184,6 +184,7 @@ function App() {
 
   const renderCalendar = () => (
     <FullCalendar
+      key={events.length} // <--- ADD THIS. It forces refresh when data arrives
       ref={calendarRef}
       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
       initialView="timeGridDay"

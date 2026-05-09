@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import EventSession
+from .models import PingLog
 from .serializers import EventSessionSerializer
 # Import your features script (assuming it's in a utils subfolder)
 from .utils import features 
@@ -18,17 +19,22 @@ class EventSessionViewSet(viewsets.ModelViewSet):
 
 # Add the new APIView for the ML Traffic Monitor
 class PingDataView(APIView):
-    """
-    Specialized endpoint for fetching ML-processed traffic data.
-    """
     def get(self, request):
-        # Your previous Flask-style logic goes here
-        # ... (psycopg2 or Django ORM logic to fetch raw data) ...
-        # ... (ML feature generation via features.make_features) ...
+        start = request.query_params.get("start")
+        end = request.query_params.get("end")
+
+        # Fetch data using Django ORM
+        logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
+        # Convert QuerySet to Numpy for your features.py
+        timestamps = np.array([l.ts for l in logs])
+        rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs])
+        timeouts = np.array([1 if l.is_timeout else 0 for l in logs])
+
+        # Run your ML feature logic
+        agg_features, agg_times = features.make_features(timestamps, rtts, timeouts, agg_seconds=60, tz=JST)
+
         return Response({
-            "measured": [], # data from ML logic
-            "features": [], # data from ML logic
-            "times": [],
-            "predicted": {"pred_times": [], "pred_values": []}
+            "times": [t.isoformat() for t in agg_times],
+            "features": agg_features[:, 0].tolist() # RTT Mean
         })
