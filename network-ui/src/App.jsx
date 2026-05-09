@@ -52,7 +52,7 @@ function App() {
       data.forEach(evt => {
         // Interactive Foreground Event
         allEntries.push({
-          id: evt.id,
+          id: evt.session_id,
           title: evt.event_name,
           start: evt.start_ts,
           end: evt.end_ts,
@@ -108,6 +108,27 @@ function App() {
   const closeModal = () => setModalState({ show: false, mode: 'create', data: null });
 
   // --- CRUD Operations ---
+  const handleDateSelect = (selectInfo) => {
+    if (!isAuthenticated) return;
+    openModal('create', { start: selectInfo.startStr, end: selectInfo.endStr });
+  };
+
+  const handleEventClick = (clickInfo) => {
+    if (!isAuthenticated) return;
+    
+    // When clicked, update the chart window to match the event
+    fetchTraffic(clickInfo.event.startStr, clickInfo.event.endStr);
+
+    openModal('edit', {
+      id: clickInfo.event.id,
+      title: clickInfo.event.title,
+      start: clickInfo.event.startStr.substring(0, 16),
+      end: clickInfo.event.endStr.substring(0, 16),
+      category: clickInfo.event.extendedProps.category,
+      devices: clickInfo.event.extendedProps.devices
+    });
+  };
+
   const handleSubmitEvent = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);

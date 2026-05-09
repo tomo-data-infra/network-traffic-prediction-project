@@ -1,0 +1,160 @@
+**********************
+PowerShell transcript start
+Start time: 20260509130953
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 44136
+PSVersion: 7.6.1
+PSEdition: Core
+GitCommitId: 7.6.1
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260509_130953.txt
+PS C:\Users\user> wsl --update
+更新プログラムを確認しています。
+Linux 用 Windows サブシステムをバージョン 2.7.3 に更新しています。
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+[sudo] password for user:
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1969 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1688 kB]
+Get:7 https://esm.ubuntu.com/apps/ubuntu noble-apps-security InRelease [8371 B]
+Get:8 https://esm.ubuntu.com/apps/ubuntu noble-apps-updates InRelease [8220 B]
+Get:9 https://esm.ubuntu.com/infra/ubuntu noble-infra-security InRelease [8235 B]
+Get:10 https://esm.ubuntu.com/infra/ubuntu noble-infra-updates InRelease [8213 B]
+Fetched 3816 kB in 2s (2063 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+4 packages can be upgraded. Run 'apt list --upgradable' to see them.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ apt list --upgradable
+Listing... Done
+libheif-plugin-aomdec/noble-updates 1.17.6-1ubuntu4.3 amd64 [upgradable from: 1.17.6-1ubuntu4.2]
+libheif-plugin-aomenc/noble-updates 1.17.6-1ubuntu4.3 amd64 [upgradable from: 1.17.6-1ubuntu4.2]
+libheif-plugin-libde265/noble-updates 1.17.6-1ubuntu4.3 amd64 [upgradable from: 1.17.6-1ubuntu4.2]
+libheif1/noble-updates 1.17.6-1ubuntu4.3 amd64 [upgradable from: 1.17.6-1ubuntu4.2]
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt upgrade
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+The following packages will be upgraded:
+  libheif-plugin-aomdec libheif-plugin-aomenc libheif-plugin-libde265 libheif1
+4 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Need to get 309 kB of archives.
+After this operation, 4096 B of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-aomenc amd64 1.17.6-1ubuntu4.3 [14.7 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-aomdec amd64 1.17.6-1ubuntu4.3 [10.6 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif1 amd64 1.17.6-1ubuntu4.3 [276 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-libde265 amd64 1.17.6-1ubuntu4.3 [8156 B]
+Fetched 309 kB in 0s (1787 kB/s)
+(Reading database ... 55159 files and directories currently installed.)
+Preparing to unpack .../libheif-plugin-aomenc_1.17.6-1ubuntu4.3_amd64.deb ...
+Unpacking libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.3) over (1.17.6-1ubuntu4.2) ...
+Preparing to unpack .../libheif-plugin-aomdec_1.17.6-1ubuntu4.3_amd64.deb ...
+Unpacking libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.3) over (1.17.6-1ubuntu4.2) ...
+Preparing to unpack .../libheif1_1.17.6-1ubuntu4.3_amd64.deb ...
+Unpacking libheif1:amd64 (1.17.6-1ubuntu4.3) over (1.17.6-1ubuntu4.2) ...
+Preparing to unpack .../libheif-plugin-libde265_1.17.6-1ubuntu4.3_amd64.deb ...
+Unpacking libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.3) over (1.17.6-1ubuntu4.2) ...
+Setting up libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.3) ...
+Setting up libheif1:amd64 (1.17.6-1ubuntu4.3) ...
+Setting up libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.3) ...
+Setting up libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.3) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:5 https://esm.ubuntu.com/apps/ubuntu noble-apps-security InRelease
+Hit:6 https://esm.ubuntu.com/apps/ubuntu noble-apps-updates InRelease
+Hit:7 https://esm.ubuntu.com/infra/ubuntu noble-infra-security InRelease
+Hit:8 https://esm.ubuntu.com/infra/ubuntu noble-infra-updates InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql (16.13 (Ubuntu 16.13-0ubuntu0.24.04.1))
+Type "help" for help.
+
+log_collector=# \dt
+                   List of relations
+ Schema |            Name            | Type  |  Owner
+--------+----------------------------+-------+----------
+ public | auth_group                 | table | postgres
+ public | auth_group_permissions     | table | postgres
+ public | auth_permission            | table | postgres
+ public | auth_user                  | table | postgres
+ public | auth_user_groups           | table | postgres
+ public | auth_user_user_permissions | table | postgres
+ public | django_admin_log           | table | postgres
+ public | django_content_type        | table | postgres
+ public | django_migrations          | table | postgres
+ public | django_session             | table | postgres
+ public | event_sessions             | table | postgres
+ public | ping_logs                  | table | postgres
+ public | targets                    | table | postgres
+(13 rows)
+
+log_collector=# \d ping_logs
+                        Table "public.ping_logs"
+   Column   |           Type           | Collation | Nullable | Default
+------------+--------------------------+-----------+----------+---------
+ ts         | timestamp with time zone |           | not null |
+ target_id  | integer                  |           | not null |
+ seq        | integer                  |           |          |
+ rtt_ms     | double precision         |           |          |
+ is_timeout | boolean                  |           | not null |
+Indexes:
+    "ping_logs_pkey" PRIMARY KEY, btree (ts, target_id)
+Foreign-key constraints:
+    "ping_logs_target_id_fkey" FOREIGN KEY (target_id) REFERENCES targets(id)
+
+log_collector=# \d event_sessions
+                                              Table "public.event_sessions"
+      Column      |           Type           | Collation | Nullable |                      Default
+------------------+--------------------------+-----------+----------+----------------------------------------------------
+ session_id       | integer                  |           | not null | nextval('event_sessions_session_id_seq'::regclass)
+ start_ts         | timestamp with time zone |           | not null |
+ end_ts           | timestamp with time zone |           | not null |
+ event_name       | character varying(100)   |           |          |
+ expected_devices | integer                  |           |          | 1
+ session_category | event_type               |           | not null |
+Indexes:
+    "event_sessions_pkey" PRIMARY KEY, btree (session_id)
+Check constraints:
+    "check_duration" CHECK (end_ts > start_ts)
+
+log_collector=# \d targets
+                            Table "public.targets"
+ Column |  Type   | Collation | Nullable |               Default
+--------+---------+-----------+----------+-------------------------------------
+ id     | integer |           | not null | nextval('targets_id_seq'::regclass)
+ ip     | text    |           | not null |
+ label  | text    |           |          |
+Indexes:
+    "targets_pkey" PRIMARY KEY, btree (id)
+    "targets_ip_key" UNIQUE CONSTRAINT, btree (ip)
+Referenced by:
+    TABLE "ping_logs" CONSTRAINT "ping_logs_target_id_fkey" FOREIGN KEY (target_id) REFERENCES targets(id)
+
+log_collector=# \q
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user>
