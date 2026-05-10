@@ -32,10 +32,21 @@ function App() {
     try {
       const res = await fetch(`${DJANGO_URL}/ping_data/?start=${start}&end=${end}`);
       const data = await res.json();
+      
+      // Check if data exists
+      if (!data.times || data.times.length === 0) {
+        setPingData([]);
+        return;
+      }
+
+      // Combine 'times' and 'features' into a format Recharts understands
       const chartPoints = data.times.map((t, i) => ({
+        // Format the time string for the X-Axis (e.g., "20:46")
         time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        rtt: data.features[i][0] 
+        // Ensure the key matches the <Line dataKey="rtt" ... /> in your JSX
+        rtt: data.features[i] 
       }));
+
       setPingData(chartPoints);
     } catch (err) {
       console.error("Django Traffic Error:", err);
@@ -206,10 +217,16 @@ function App() {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pingData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis />
+            <XAxis dataKey="time" /> {/* This matches 'time' in chartPoints */}
+            <YAxis domain={[0, 'auto']} /> 
             <Tooltip />
-            <Line type="monotone" dataKey="rtt" stroke="#3b82f6" strokeWidth={3} dot={false} />
+            <Line 
+              type="monotone" 
+              dataKey="rtt"  // <--- IMPORTANT: This MUST match the key in fetchTraffic
+              stroke="#3b82f6" 
+              strokeWidth={3} 
+              dot={false} 
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
