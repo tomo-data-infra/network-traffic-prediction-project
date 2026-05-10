@@ -17,15 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from calendar_api.views import EventSessionViewSet # Import your View
+from calendar_api.views import EventSessionViewSet, PingLogViewSet, TargetViewSet, PingDataView # Import your View
 
 # 1. Create a router and register our viewset with it.
 router = DefaultRouter()
 router.register(r'event_sessions', EventSessionViewSet)
+router.register(r'ping_logs', PingLogViewSet)
+router.register(r'targets', TargetViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # 2. Include the router URLs under an 'api/' prefix
-    path('api/', include(router.urls)),
+    # Group all API endpoints under 'api/'
+    path('api/', include([
+        # 1. Include the auto-generated ViewSet urls (EventSessions, etc.)
+        path('', include(router.urls)),
+        
+        # 2. Add your custom ML Ping Data endpoint
+        # React will now fetch this from: http://localhost:8000/api/ping_data/
+        path('ping_data/', PingDataView.as_view(), name='ping_data'),
+    ])),
 ]
-
