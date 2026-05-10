@@ -20,7 +20,11 @@ class EventSessionViewSet(viewsets.ModelViewSet):
     serializer_class = EventSessionSerializer
 
 class PingLogViewSet(viewsets.ModelViewSet):
-    queryset = PingLog.objects.all()
+    """
+    This is for the raw data view. 
+    We limit it to the latest 100 rows so it loads INSTANTLY.
+    """
+    queryset = PingLog.objects.all().order_by('-ts')[:100] 
     serializer_class = PingLogSerializer
 
 class TargetViewSet(viewsets.ModelViewSet):
@@ -30,29 +34,29 @@ class TargetViewSet(viewsets.ModelViewSet):
 # Add the new APIView for the ML Traffic Monitor
 class PingDataView(APIView):
     def get(self, request):
+        # 1. Get the designated period from React
         start_str = request.query_params.get("start")
         end_str = request.query_params.get("end")
 
         # Fallback logic: Use JST for a 30m window
         now = datetime.now(JST).replace(second=0, microsecond=0)
         
-        # 1. Parse or Calculate the Window
-        # Note: .astimezone(JST) is safer than .replace if the string has a 'Z'
+        # 2. DEFAULT: Latest 30 mins if no period is designated
+        # DESIGNATED: Specific period if React sends it
         start = datetime.fromisoformat(start_str).astimezone(JST) if start_str else now - timedelta(minutes=30)
         end = datetime.fromisoformat(end_str).astimezone(JST) if end_str else now
 
-        # 2. Fetch from ORM
+        # 3. Fetch ONLY the requested slice
         logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
         # --- CRITICAL MISSING BLOCK START ---
-        # Even if no logs exist, we create empty arrays so features.py can still return baseline data
+        # Convert to Numpy for your ML features.py script
         timestamps = np.array([l.ts for l in logs])
         rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs])
         timeouts = np.array([1 if l.is_timeout else 0 for l in logs])
         # --- CRITICAL MISSING BLOCK END ---
 
-        # 3. Pass the specific window to features.py
-        # This ensures the chart fills the whole 30m even if logs are missing
+        # 4. ML Processing for that specific window
         agg_features, agg_times = features.make_features(
             timestamps, 
             rtts, 
@@ -62,10 +66,9 @@ class PingDataView(APIView):
             start_window=start, 
             end_window=end
         )
-        
+
         # 4. Return the JSON package
         return Response({
             "times": [t.isoformat() for t in agg_times],
-            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [],
-            "measured": [{"ts": l.ts.isoformat(), "rtt": l.rtt_ms} for l in logs]
+            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else []
         })

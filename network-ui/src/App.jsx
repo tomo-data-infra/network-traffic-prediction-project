@@ -87,10 +87,23 @@ function App() {
   }, [viewMode]); // Trigger every time we switch back to calendar
 
   // --- Handlers ---
+  // This handles the "Real Time" (latest 30 mins)
   const switchToDashboard = () => {
     const now = new Date();
-    fetchTraffic(new Date(now - 30*60000).toISOString(), new Date(now + 30*60000).toISOString());
+    const start = new Date(now - 30*60000).toISOString();
+    const end = now.toISOString();
+    
+    // Update the UI inputs to show the 30m window
+    setRange({ start: start.substring(0, 16), end: end.substring(0, 16) });
+    
+    fetchTraffic(start, end);
     setViewMode('dashboard');
+  };
+
+  // This handles the "Designated Period" from your inputs
+  const handleManualUpdate = () => {
+    // Use the values from your datetime-local inputs
+    fetchTraffic(range.start, range.end);
   };
 
   // UI RENDER HELPERS
