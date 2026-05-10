@@ -33,31 +33,39 @@ class PingDataView(APIView):
         start_str = request.query_params.get("start")
         end_str = request.query_params.get("end")
 
-        # Fallback to last 60 mins if no range is provided
-        now = datetime.now(JST)
-        start = datetime.fromisoformat(start_str) if start_str else now - timedelta(minutes=30)
-        end = datetime.fromisoformat(end_str) if end_str else now + timedelta(minutes=30)
+        # Fallback logic: Use JST for a 30m window
+        now = datetime.now(JST).replace(second=0, microsecond=0)
+        
+        # 1. Parse or Calculate the Window
+        # Note: .astimezone(JST) is safer than .replace if the string has a 'Z'
+        start = datetime.fromisoformat(start_str).astimezone(JST) if start_str else now - timedelta(minutes=30)
+        end = datetime.fromisoformat(end_str).astimezone(JST) if end_str else now
 
-        # 1. Fetch from ORM
+        # 2. Fetch from ORM
         logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
-        if not logs.exists():
-            return Response({"times": [], "features": [], "measured": []})
-
-        # 2. Prepare for features.py
+        # --- CRITICAL MISSING BLOCK START ---
+        # Even if no logs exist, we create empty arrays so features.py can still return baseline data
         timestamps = np.array([l.ts for l in logs])
         rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs])
         timeouts = np.array([1 if l.is_timeout else 0 for l in logs])
+        # --- CRITICAL MISSING BLOCK END ---
 
-        # 3. Process with ML script
-        # Ensure your features.py can handle the JST object
-        agg_features, agg_times = features.make_features(timestamps, rtts, timeouts, agg_seconds=60, tz=JST)
-
-        # 4. JSON Response (Must be standard Python types)
+        # 3. Pass the specific window to features.py
+        # This ensures the chart fills the whole 30m even if logs are missing
+        agg_features, agg_times = features.make_features(
+            timestamps, 
+            rtts, 
+            timeouts, 
+            agg_seconds=60, 
+            tz=JST, 
+            start_window=start, 
+            end_window=end
+        )
+        
+        # 4. Return the JSON package
         return Response({
             "times": [t.isoformat() for t in agg_times],
-            "features": agg_features[:, 0].tolist(), # Convert numpy to list
-            "measured": [
-                {"ts": l.ts.isoformat(), "rtt": l.rtt_ms} for l in logs
-            ]
+            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [],
+            "measured": [{"ts": l.ts.isoformat(), "rtt": l.rtt_ms} for l in logs]
         })
