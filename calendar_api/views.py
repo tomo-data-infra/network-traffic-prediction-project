@@ -1,9 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import EventSession
-from .models import PingLog
-from .serializers import EventSessionSerializer
+from .models import EventSession, PingLog, Target
+from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
 # Import your features script (assuming it's in a utils subfolder)
 from .utils import features 
 import numpy as np
@@ -16,6 +15,14 @@ class EventSessionViewSet(viewsets.ModelViewSet):
     """
     queryset = EventSession.objects.all()
     serializer_class = EventSessionSerializer
+
+class PingLogViewSet(viewsets.ModelViewSet):
+    queryset = PingLog.objects.all()
+    serializer_class = PingLogSerializer
+
+class TargetViewSet(viewsets.ModelViewSet):
+    queryset = Target.objects.all()
+    serializer_class = TargetSerializer
 
 # Add the new APIView for the ML Traffic Monitor
 class PingDataView(APIView):

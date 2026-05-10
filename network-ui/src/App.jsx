@@ -277,7 +277,7 @@ function App() {
             <label>Category</label>
             <select name="category" defaultValue={modalState.data?.category || 'video_session'}>
               <option value="video_session">Video Session</option>
-              <option value="system_update">System Update!!!!!</option>
+              <option value="system_update">System Update</option>
             </select>
 
             <div className="modal-actions">
