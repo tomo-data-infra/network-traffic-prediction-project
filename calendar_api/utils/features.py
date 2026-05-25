@@ -90,56 +90,41 @@ def make_features(timestamps, rtts, timeouts, agg_seconds=60, tz=None, one_hot=F
             return np.array([]), []
     else:
         # Determine the boundaries based on the window or the data
-        current = start_window if start_window else timestamps[0].replace(second=0, microsecond=0)
-        limit = end_window if end_window else timestamps[-1].replace(second=0, microsecond=0)
+        # Use .item() to extract the native Python datetime object from the NumPy array safely
+        current = start_window if start_window else timestamps[0].item().replace(second=0, microsecond=0)
+        limit = end_window if end_window else timestamps[-1].item().replace(second=0, microsecond=0)
 
     delta = timedelta(seconds=agg_seconds)
     agg_features = []
     agg_times = []
 
     # Loop through the designated time window minute-by-minute
-    while current <= limit:
+    while current < limit: #current <= limit ?
         # Create a mask for data points within this 60-second bin
         mask = (timestamps >= current) & (timestamps < current + delta) #mask for 60 seconds 1D numpy.ndarray(True, True, True, True ... ] )
         
         if not np.any(mask):
             #!!!!!!!!!!! inputation logic !!!!!!!!!!!!!!
             # No data collected for this minute: Use stable imputation baseline
+            # Imputation baseline for complete monitoring gaps (No pings attempted)
             mean_rtt = 5.5
-            jitter = 2.1
+            jitter = 0.0 #jitter = 2.1
             loss_rate = 0.0
         else:
             rtt_window = rtts[mask]
             timeout_window = timeouts[mask]
 
             # Remove NaN values from RTT window
+            # Timeouts conversion drops NaNs completely out of the RTT stats window
             rtt_window = rtt_window[~np.isnan(rtt_window)]
             
             if len(rtt_window) > 0:
-                # 3-Sigma Outlier Removal
-                #         # Outlier removal using IQR
-                #         if len(rtt_window) > 0:
-                #             q1 = np.percentile(rtt_window, 25)
-                #             q3 = np.percentile(rtt_window, 75)
-                #             iqr = q3 - q1
-                #             lower_bound = q1 - 3.0 * iqr    #1.5
-                #             upper_bound = q3 + 3.0 * iqr    #1.5
-                #             valid_rtt = rtt_window[(rtt_window >= lower_bound) & (rtt_window <= upper_bound)]
-                #         else:
-                #             valid_rtt = np.array([])
-                rtt_mean_val = rtt_window.mean()
-                rtt_std_val = rtt_window.std()
-                lower_bound = rtt_mean_val - 3 * rtt_std_val
-                upper_bound = rtt_mean_val + 3 * rtt_std_val
-                
-                valid_rtt = rtt_window[(rtt_window > lower_bound) & (rtt_window < upper_bound)]
-                
-                # Final Stats for the bin
-                mean_rtt = valid_rtt.mean() if len(valid_rtt) > 0 else 5.5
-                jitter = valid_rtt.std() if len(valid_rtt) > 0 else 2.1
+                mean_rtt = rtt_window.mean()
+                jitter = rtt_window.std()
+
             else:
-                mean_rtt = 5.5
-                jitter = 2.1
+                mean_rtt = 100 #mean_rtt = 5.5
+                jitter = 0.0 #jitter = 2.1
             
             # Loss rate calculation from timeout flags
             loss_rate = timeout_window.mean() if len(timeout_window) > 0 else 0.0

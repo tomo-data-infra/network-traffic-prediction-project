@@ -4,15 +4,26 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 // Import Recharts for the traffic visualization
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { 
+  AreaChart,
+  Area,
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import './App.css'; // Assuming you add the CSS below
-
 
 function App() {
   // --- States ---
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'dashboard'
   const [events, setEvents] = useState([]);
-  const [pingData, setPingData] = useState([]); // Traffic data state
+  const [pingData, setPingData] = useState([]); // Traffic data state 
+  const [dashboardEvents, setDashboardEvents] = useState([]); // Real-time concurrent events track
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [modalState, setModalState] = useState({ show: false, mode: 'create', data: null });
   const [authError, setAuthError] = useState('');
@@ -21,39 +32,51 @@ function App() {
     end: new Date(new Date() + 30 * 60000).toISOString().substring(0, 16)
   });
 
-  // --- Refs --- 
+    // --- Refs --- 
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
-  const DJANGO_URL = "http://localhost:8000/api"; // Your Django Server
+  const DJANGO_URL = "http://localhost:8000/api"; 
   const PASSWORD = import.meta.env.VITE_PASSWORD;
 
-  // FETCH TRAFFIC FROM DJANGO
+  // --- API Handlers FETCH TRAFFIC FROM DJANGO ---
   const fetchTraffic = async (start, end) => {
     try {
       const res = await fetch(`${DJANGO_URL}/ping_data/?start=${start}&end=${end}`);
       const data = await res.json();
-      
+
       // Check if data exists
       if (!data.times || data.times.length === 0) {
         setPingData([]);
+        setDashboardEvents([]);
         return;
       }
 
+      // Map backend datasets into synchronous React chart coordinates
       // Combine 'times' and 'features' into a format Recharts understands
-      const chartPoints = data.times.map((t, i) => ({
+      const chartPoints = data.times.map((t, i) => {
         // Format the time string for the X-Axis (e.g., "20:46")
-        time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        // Ensure the key matches the <Line dataKey="rtt" ... /> in your JSX
-        rtt: data.features[i] 
-      }));
+        const rtt = data.features[i];
+        const jitter = data.jitters ? data.jitters[i] : 0;
+        return {
+          time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          // Ensure the key matches the <Line dataKey="rtt" ... /> in your JSX
+          rawTime: new Date(t), // Kept for interval parsing
+          rtt: rtt,
+          // Generate explicit high/low error boundaries for the chart shading track
+          jitterHigh: rtt + jitter,
+          jitterLow: Math.max(0, rtt - jitter), // Clamped to zero to prevent invalid negative latencies
+          loss: data.loss_rates ? data.loss_rates[i] : 0
+        };
+      });
 
       setPingData(chartPoints);
+      if (data.events) setDashboardEvents(data.events);
     } catch (err) {
-      console.error("Django Traffic Error:", err);
+      console.error("Django Telemetry Sync Error:", err);
     }
   };
 
-  // FETCH EVENTS FROM DJANGO
+    // FETCH EVENTS FROM DJANGO
   const fetchEvents = async () => {
     try {
       const res = await fetch(`${DJANGO_URL}/event_sessions/`);
@@ -82,7 +105,7 @@ function App() {
       });
       setEvents(allEntries);
     } catch (err) {
-      console.error("Django Events Error:", err);
+      console.error("Events Fetch Exception:", err);
     }
   };
 
@@ -106,12 +129,12 @@ function App() {
     
     // Update the UI inputs to show the 30m window
     setRange({ start: start.substring(0, 16), end: end.substring(0, 16) });
-    
+
     fetchTraffic(start, end);
     setViewMode('dashboard');
   };
 
-  // This handles the "Designated Period" from your inputs
+    // This handles the "Designated Period" from your inputs
   const handleManualUpdate = () => {
     // Use the values from your datetime-local inputs
     fetchTraffic(range.start, range.end);
@@ -188,13 +211,71 @@ function App() {
     } catch (err) { console.error('Delete error:', err); }
   };
 
+  // --- Overlapping Events Calculations ---
+  // Processes matching events and assigns distinct lane indices to handle stacking
+  const computeEventTimelineGantt = () => {
+    // 1. Guard check to ensure both datasets are present before iterating
+    if (!pingData || pingData.length === 0 || !dashboardEvents || dashboardEvents.length === 0) {
+      return { processedGantt: [], totalLanes: 0 };
+    }
+
+    const formattedGanttRows = [];
+    const executionLanes = []; // Stacks track allocation values to split overlaps cleanly
+
+    dashboardEvents.forEach(evt => {
+      const eStart = new Date(evt.start);
+      const eEnd = new Date(evt.end);
+
+      // 2. Multi-lane tracking allocation logic
+      let assignedLane = 0;
+      while (true) {
+        if (!executionLanes[assignedLane] || executionLanes[assignedLane] <= eStart) {
+          executionLanes[assignedLane] = eEnd; // Store completion point for this track lane
+          break;
+        }
+        assignedLane++; // Increment lane pointer until an open time slot is discovered
+      }
+
+      // 3. FIX: Iterate directly over the clean array objects instead of linear string searching
+      pingData.forEach(binPoint => {
+        // Evaluate the continuous raw timestamp to ensure absolute chronological accuracy
+        if (binPoint.rawTime >= eStart && binPoint.rawTime <= eEnd) {
+          formattedGanttRows.push({
+            time: binPoint.time, // The display X-Axis timestamp string
+            [`lane_${assignedLane}`]: 1, // High marker payload to draw a standard block segment
+            eventTitle: evt.title,
+            category: evt.category,
+            devices: evt.devices,
+            duration: `${eStart.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${eEnd.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+          });
+        }
+      });
+    });
+
+    return { processedGantt: formattedGanttRows, totalLanes: executionLanes.length };
+  };
+
+  const { processedGantt, totalLanes } = computeEventTimelineGantt();
+
+  // Combines performance graphs with the current event row blocks
+  const integratedChartData = pingData.map(p => {
+    const matchingGanttSlices = processedGantt.filter(g => g.time === p.time);
+    const combinedPoint = { ...p };
+    matchingGanttSlices.forEach(slice => {
+      Object.keys(slice).forEach(k => {
+        if (k.startsWith('lane_') || k === 'eventTitle' || k === 'devices' || k === 'duration') {
+          combinedPoint[k] = slice[k];
+        }
+      });
+    });
+    return combinedPoint;
+  });
+
   // --- Render Helpers (Defined ABOVE the main return) ---
   const renderDashboard = () => (
-    <div className="dashboard-view">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-        <h2>Traffic Analysis</h2>
-        
-        {/* Manual Range Controls */}
+    <div className="dashboard-view" style={{ background: '#f9fafb', paddingTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Unified Traffic Telemetry Dashboard</h2>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input 
             type="datetime-local" 
@@ -207,82 +288,142 @@ function App() {
             value={range.end} 
             onChange={(e) => setRange({ ...range, end: e.target.value })}
           />
-          <button onClick={() => fetchTraffic(range.start, range.end)}>Update Range</button>
+          <button 
+            onClick={handleManualUpdate} 
+            style={{ padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Update Window
+          </button>
         </div>
-
-        <button onClick={() => setViewMode('calendar')}>Back to Calendar</button>
+        <button onClick={() => setViewMode('calendar')} style={{ padding: '6px 12px', cursor: 'pointer' }}>Back to Calendar</button>
       </div>
 
-      <div style={{ height: '450px', background: '#fff', padding: '20px', marginTop: '20px', borderRadius: '8px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={pingData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" /> {/* This matches 'time' in chartPoints */}
-            <YAxis domain={[0, 'auto']} /> 
+      {/* TIER 1: Latency Band Area Plot */}
+      <div style={{ height: '320px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Latency Variance Profile (RTT ± Jitter)</h4>
+        <ResponsiveContainer width="100%" height="90%">
+          <AreaChart data={integratedChartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+            <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
+            <YAxis label={{ value: 'ms', angle: -90, position: 'insideLeft' }} />
             <Tooltip />
-            <Line 
-              type="monotone" 
-              dataKey="rtt"  // <--- IMPORTANT: This MUST match the key in fetchTraffic
-              stroke="#3b82f6" 
-              strokeWidth={3} 
-              dot={false} 
-            />
-          </LineChart>
+            <Area type="monotone" dataKey="jitterHigh" stroke="none" fill="#9ca3af" fillOpacity={0.25} name="Jitter Upper Boundary" connectNulls />
+            <Area type="monotone" dataKey="jitterLow" stroke="none" fill="#9ca3af" fillOpacity={0.25} name="Jitter Lower Boundary" connectNulls />
+            <Area type="monotone" dataKey="rtt" stroke="#111827" strokeWidth={2.5} fill="none" name="Mean RTT" connectNulls />
+          </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* TIER 2: Drop Rate Histogram */}
+      <div style={{ height: '180px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Packet Drop Ratios (Histogram Spectrum)</h4>
+        <ResponsiveContainer width="100%" height="90%">
+          <BarChart data={integratedChartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+            <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
+            <YAxis domain={[0, 1]} tickFormatter={(val) => `${(val * 100).toFixed(0)}%`} tick={{ fill: '#4b5563' }} />
+            <Tooltip formatter={(val) => [`${(val * 100).toFixed(1)}%`, 'Drop Density']} />
+            <Bar dataKey="loss">
+              {integratedChartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={`rgba(239, 68, 68, ${Math.max(0.15, entry.loss)})`} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* TIER 3: Interactive Multi-Lane Tracks */}
+      <div style={{ height: `${120 + (totalLanes * 40)}px`, background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <h4 style={{ margin: '0 0 15px 0', color: '#4b5563' }}>Active Scheduled Overlapping Operations Tracker</h4>
+        {totalLanes === 0 ? (
+          <p style={{ color: '#9ca3af', fontSize: '13px' }}>No operational parameters scheduled inside this monitoring window.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height="80%">
+            <BarChart data={integratedChartData} barGap={4}>
+              <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
+              <YAxis hide domain={[0, 1]} />
+              <Tooltip 
+                cursor={{ fill: '#f3f4f6', opacity: 0.4 }}
+                formatter={(value, name, props) => {
+                  if (!props.payload.eventTitle) return null;
+                  return [
+                    `Devices: ${props.payload.devices} (${props.payload.duration})`, 
+                    `Event: ${props.payload.eventTitle}`
+                  ];
+                }} 
+              />
+              {Array.from({ length: totalLanes }).map((_, laneIdx) => (
+                <Bar key={`lane_${laneIdx}`} dataKey={`lane_${laneIdx}`} stackId="gantt" fill="#3b82f6" radius={4} maxBarSize={28} />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
 
+  // --- Calendar View Sub-render ---
   const renderCalendar = () => (
-    <FullCalendar
-      key={events.length} // <--- ADD THIS. It forces refresh when data arrives
-      ref={calendarRef}
-      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-      initialView="timeGridDay"
-      events={events}
-      headerToolbar={{
-        left: 'prev,next today realtimeBtn',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      }}
-      customButtons={{
-        realtimeBtn: {
-          text: 'Real Time Monitor',
-          click: switchToDashboard
-        }
-      }}
-      selectable={isAuthenticated}
-      select={(info) => openModal('create', { start: info.startStr, end: info.endStr })}
-      eventClick={(info) => {
-        if (!isAuthenticated) return;
-        openModal('edit', {
-          id: info.event.id,
-          title: info.event.title,
-          start: info.event.startStr.substring(0, 16),
-          end: info.event.endStr.substring(0, 16),
-          category: info.event.extendedProps.category,
-          devices: info.event.extendedProps.devices
-        });
-      }}
-      height="85vh"
-    />
+    <div className="calendar-view">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Operational Planning Calendar</h2>
+        <button onClick={switchToDashboard} className="btn-dashboard" style={{ padding: '8px 16px', background: '#111827', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>View Dashboard</button>
+      </div>
+      <FullCalendar
+        key={events.length} 
+        ref={calendarRef}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="timeGridWeek"
+        events={events}
+        headerToolbar={{
+          left: 'prev,next today realtimeBtn',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        }}
+        customButtons={{
+          realtimeBtn: {
+            text: 'Real Time Monitor',
+            click: switchToDashboard
+          }
+        }}
+        selectable={isAuthenticated}
+        select={(info) => openModal('create', { start: info.startStr, end: info.endStr })}
+        eventClick={(info) => {
+          if (!isAuthenticated) return;
+          openModal('edit', {
+            id: info.event.id,
+            title: info.event.title,
+            start: info.event.startStr.substring(0, 16),
+            end: info.event.endStr.substring(0, 16),
+            category: info.event.extendedProps.category,
+            devices: info.event.extendedProps.devices
+          });
+        }}
+        height="85vh"
+      />
+    </div>
   );
 
-  // --- Main Return ---
+  // --- Main Structural Return ---
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Network Traffic Monitor</h1>
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', marginBottom: '20px' }}>
+        <h1>Network Traffic Analytics Monitor</h1>
+        <div style={{ fontSize: '14px', color: '#6b7280' }}>
+          Status: {isAuthenticated ? <strong style={{ color: '#10b981' }}>Admin Mode</strong> : <strong style={{ color: '#ef4444' }}>Read-Only</strong>}
+        </div>
+      </div>
 
-      {/* --- Auth Screen Overlay --- */}
+      {/* Auth Screen Overlay */}
       {!isAuthenticated && (
-        <form onSubmit={handleAuth} className="auth-overlay">
-          <h2>Admin Login</h2>
-          <input type="password" ref={passwordRef} placeholder="Password" />
-          <button type="submit">Login</button>
-          {authError && <p style={{ color: 'red' }}>{authError}</p>}
+        <form onSubmit={handleAuth} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#f3f4f6', padding: '12px', borderRadius: '6px', marginBottom: '20px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>Unlock Admin Controls:</span>
+          <input type="password" ref={passwordRef} placeholder="Enter Admin Password" style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #d1d5db' }} />
+          <button type="submit" style={{ padding: '4px 12px', background: '#4b5563', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Login</button>
+          {authError && <p style={{ color: 'red', margin: 0, fontSize: '13px' }}>{authError}</p>}
         </form>
       )}
-
+      
       {/* Switch between Dashboard and Calendar views */}
       {viewMode === 'calendar' ? renderCalendar() : renderDashboard()}
 

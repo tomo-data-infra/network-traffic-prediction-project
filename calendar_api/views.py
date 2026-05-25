@@ -43,17 +43,17 @@ class PingDataView(APIView):
         
         # 2. DEFAULT: Latest 30 mins if no period is designated
         # DESIGNATED: Specific period if React sends it
-        start = datetime.fromisoformat(start_str).astimezone(JST) if start_str else now - timedelta(minutes=30)
-        end = datetime.fromisoformat(end_str).astimezone(JST) if end_str else now
-
-        # 3. Fetch ONLY the requested slice
+        start = datetime.fromisoformat(start_str).replace(tzinfo=JST) if start_str else now - timedelta(minutes=30)
+        end = datetime.fromisoformat(end_str).replace(tzinfo=JST) if end_str else now
+        
+        # 3. Fetch ONLY the requested slice  Fetch Network Telemetry
         logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
         # --- CRITICAL MISSING BLOCK START ---
-        # Convert to Numpy for your ML features.py script
-        timestamps = np.array([l.ts for l in logs])
-        rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs])
-        timeouts = np.array([1 if l.is_timeout else 0 for l in logs])
+        # Force explicit types to ensure empty dataframes do not cause out-of-bounds array crashes
+        timestamps = np.array([l.ts for l in logs], dtype=object)
+        rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs], dtype=float)
+        timeouts = np.array([1 if l.is_timeout else 0 for l in logs], dtype=int)
         # --- CRITICAL MISSING BLOCK END ---
 
         # 4. ML Processing for that specific window
@@ -68,7 +68,26 @@ class PingDataView(APIView):
         )
 
         # 4. Return the JSON package
+        # FETCH OVERLAPPING CALENDAR EVENTS FOR THIS VISUAL WINDOW
+        # If an event starts before the window ends, and ends after the window starts, it overlaps.
+        overlapping_events = EventSession.objects.filter(
+            start_ts__lt=end,
+            end_ts__gt=start
+        ).order_by('start_ts')
+
+        events_payload = [{
+            "id": evt.session_id,
+            "title": evt.event_name,
+            "start": evt.start_ts.isoformat(),
+            "end": evt.end_ts.isoformat(),
+            "category": evt.session_category,
+            "devices": evt.expected_devices
+        } for evt in overlapping_events]
+
         return Response({
             "times": [t.isoformat() for t in agg_times],
-            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else []
+            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [], # Mean RTT
+            "jitters": agg_features[:, 1].tolist() if len(agg_features) > 0 else [],  # Jitter Standard Deviation
+            "loss_rates": agg_features[:, 2].tolist() if len(agg_features) > 0 else [],
+            "events": events_payload # Forwarded payload for the concurrent timeline track
         })
