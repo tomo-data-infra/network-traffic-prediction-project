@@ -27,9 +27,16 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [modalState, setModalState] = useState({ show: false, mode: 'create', data: null });
   const [authError, setAuthError] = useState('');
+  const getJSTStringWithOffset = (minutesOffset = 0) => {
+    const currentMs = Date.now() + (minutesOffset * 60000);
+    // Explicitly add 9 hours in milliseconds to offset the native system clock string conversion
+    const jstDate = new Date(currentMs + (9 * 60 * 60 * 1000)); 
+    return jstDate.toISOString().substring(0, 16);
+  };
+
   const [range, setRange] = useState({
-    start: new Date(new Date() - 30 * 60000).toISOString().substring(0, 16),
-    end: new Date(new Date() + 30 * 60000).toISOString().substring(0, 16)
+    start: getJSTStringWithOffset(-30), // Current JST minus 30 minutes
+    end: getJSTStringWithOffset(30)     // Current JST plus 30 minutes
   });
 
     // --- Refs --- 
@@ -38,7 +45,7 @@ function App() {
   const DJANGO_URL = "http://localhost:8000/api"; 
   const PASSWORD = import.meta.env.VITE_PASSWORD;
 
-  // --- API Handlers FETCH TRAFFIC FROM DJANGO ---
+  // --- API Handlers FETCH TRAFFIC FROM DJANGO --- --- Updated fetchTraffic to bundle actual and forecast pipelines ---
   const fetchTraffic = async (start, end) => {
     try {
       const res = await fetch(`${DJANGO_URL}/ping_data/?start=${start}&end=${end}`);
@@ -51,28 +58,51 @@ function App() {
         return;
       }
 
+      // Map combined properties into unified array models for chart ingestion
       // Map backend datasets into synchronous React chart coordinates
       // Combine 'times' and 'features' into a format Recharts understands
       const chartPoints = data.times.map((t, i) => {
         // Format the time string for the X-Axis (e.g., "20:46")
         const rtt = data.features[i];
         const jitter = data.jitters ? data.jitters[i] : 0;
+        
+        // Find matching minute item in forecast array matrix
+        const matchingForecast = data.forecast ? data.forecast.find(f => 
+          new Date(f.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) === 
+          new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        ) : null;
+
         return {
           time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           // Ensure the key matches the <Line dataKey="rtt" ... /> in your JSX
-          rawTime: new Date(t), // Kept for interval parsing
+          rawTime: new Date(t), // Kept for interval parsing 
           rtt: rtt,
           // Generate explicit high/low error boundaries for the chart shading track
           jitterHigh: rtt + jitter,
-          jitterLow: Math.max(0, rtt - jitter), // Clamped to zero to prevent invalid negative latencies
-          loss: data.loss_rates ? data.loss_rates[i] : 0
+          jitterLow: Math.max(0, rtt - jitter), // Clamped to zero to prevent invalid negative latencies 
+          loss: data.loss_rates ? data.loss_rates[i] : 0,
+          // Append Predicted Parameters
+          predRtt: matchingForecast ? matchingForecast.pred_rtt : null,
+          predLoss: matchingForecast ? matchingForecast.pred_loss : 0
         };
       });
 
       setPingData(chartPoints);
       if (data.events) setDashboardEvents(data.events);
     } catch (err) {
-      console.error("Django Telemetry Sync Error:", err);
+      console.error("Traffic Sync Failure:", err);
+    }
+  };
+
+  const handleTrainModel = async () => {
+    if (!window.confirm("Retrain the statistical baseline profile using the past 30 days of data?")) return;
+    try {
+      const res = await fetch(`${DJANGO_URL}/train_model/`, { method: 'POST' });
+      const data = await res.json();
+      alert(data.status || "Training complete!");
+      handleManualUpdate(); // Force visualization refresh
+    } catch (err) {
+      console.error("Training Error:", err);
     }
   };
 
@@ -123,14 +153,14 @@ function App() {
   // --- Handlers ---
   // This handles the "Real Time" (latest 30 mins)
   const switchToDashboard = () => {
-    const now = new Date();
-    const start = new Date(now - 30*60000).toISOString();
-    const end = now.toISOString();
+    // Generate accurate local time strings using our utility helper function
+    const jstStartString = getJSTStringWithOffset(-30);
+    const jstEndString = getJSTStringWithOffset(0);
     
     // Update the UI inputs to show the 30m window
-    setRange({ start: start.substring(0, 16), end: end.substring(0, 16) });
+    setRange({ start: jstStartString, end: jstEndString });
 
-    fetchTraffic(start, end);
+    fetchTraffic(jstStartString, jstEndString);
     setViewMode('dashboard');
   };
 
@@ -272,61 +302,70 @@ function App() {
   });
 
   // --- Render Helpers (Defined ABOVE the main return) ---
+// --- Replace the Top Control Row inside your renderDashboard helper ---
   const renderDashboard = () => (
     <div className="dashboard-view" style={{ background: '#f9fafb', paddingTop: '10px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Unified Traffic Telemetry Dashboard</h2>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <input 
-            type="datetime-local" 
-            value={range.start} 
-            onChange={(e) => setRange({ ...range, start: e.target.value })}
-          />
+        
+        {/* Unified Operational Controls Grouping */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input type="datetime-local" value={range.start} onChange={(e) => setRange({ ...range, start: e.target.value })}/>
           <span>to</span>
-          <input 
-            type="datetime-local" 
-            value={range.end} 
-            onChange={(e) => setRange({ ...range, end: e.target.value })}
-          />
-          <button 
-            onClick={handleManualUpdate} 
-            style={{ padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-          >
+          <input type="datetime-local" value={range.end} onChange={(e) => setRange({ ...range, end: e.target.value })}/>
+          
+          <button onClick={handleManualUpdate} style={{ padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
             Update Window
+          </button>
+
+          <button onClick={() => { handleManualUpdate(); alert("Projected curves overlay refreshed based on calendar parameters."); }} style={{ padding: '6px 12px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            🔮 Predict Traffic
+          </button>
+
+          <button onClick={handleTrainModel} style={{ padding: '6px 12px', background: '#4b5563', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+            ⚙️ Train Model
           </button>
         </div>
         <button onClick={() => setViewMode('calendar')} style={{ padding: '6px 12px', cursor: 'pointer' }}>Back to Calendar</button>
       </div>
 
-      {/* TIER 1: Latency Band Area Plot */}
+      {/* TIER 1 Chart Canvas: Overlaying Projected Dashed Traces */}
       <div style={{ height: '320px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
-        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Latency Variance Profile (RTT ± Jitter)</h4>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Latency Variance Profile (Solid Actual vs Dashed Forecast)</h4>
         <ResponsiveContainer width="100%" height="90%">
           <AreaChart data={integratedChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
             <YAxis label={{ value: 'ms', angle: -90, position: 'insideLeft' }} />
             <Tooltip />
-            <Area type="monotone" dataKey="jitterHigh" stroke="none" fill="#9ca3af" fillOpacity={0.25} name="Jitter Upper Boundary" connectNulls />
-            <Area type="monotone" dataKey="jitterLow" stroke="none" fill="#9ca3af" fillOpacity={0.25} name="Jitter Lower Boundary" connectNulls />
-            <Area type="monotone" dataKey="rtt" stroke="#111827" strokeWidth={2.5} fill="none" name="Mean RTT" connectNulls />
+            <Area type="monotone" dataKey="jitterHigh" stroke="none" fill="#9ca3af" fillOpacity={0.2} connectNulls name="Actual Variance Bound"/>
+            <Area type="monotone" dataKey="jitterLow" stroke="none" fill="#9ca3af" fillOpacity={0.2} connectNulls showMark={false}/>
+            <Area type="monotone" dataKey="rtt" stroke="#111827" strokeWidth={2.5} fill="none" name="Actual Mean RTT" connectNulls />
+            
+            {/* Predicted Curve Overlay Trace Node */}
+            <Area type="monotone" dataKey="predRtt" stroke="#dc2626" strokeWidth={2.5} strokeDasharray="6 4" fill="none" name="Forecasted RTT Profile" connectNulls />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* TIER 2: Drop Rate Histogram */}
+      {/* TIER 2 Chart Canvas: Redder Gradation Cells for Heavy Predicted Loading */}
       <div style={{ height: '180px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
-        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Packet Drop Ratios (Histogram Spectrum)</h4>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Packet Drop Ratios (Solid Actual vs Highlighted Forecast Risk)</h4>
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={integratedChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
-            <YAxis domain={[0, 1]} tickFormatter={(val) => `${(val * 100).toFixed(0)}%`} tick={{ fill: '#4b5563' }} />
-            <Tooltip formatter={(val) => [`${(val * 100).toFixed(1)}%`, 'Drop Density']} />
+            <YAxis domain={[0, 1]} tickFormatter={(val) => `${(val * 100).toFixed(0)}%`} />
+            <Tooltip />
             <Bar dataKey="loss">
-              {integratedChartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={`rgba(239, 68, 68, ${Math.max(0.15, entry.loss)})`} />
-              ))}
+              {integratedChartData.map((entry, index) => {
+                // If forecast model expects heavy traffic loss spikes, shift palette to deep crimson red
+                const isHeavyPrediction = entry.predLoss > 0.15;
+                const cellColor = isHeavyPrediction 
+                  ? `rgba(153, 27, 27, ${Math.max(0.4, entry.loss || entry.predLoss)})` // Dark Red Outage Alert
+                  : `rgba(239, 68, 68, ${Math.max(0.15, entry.loss)})`; // Standard Telemetry trace
+                return <Cell key={`cell-${index}`} fill={cellColor} />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -358,7 +397,7 @@ function App() {
             </BarChart>
           </ResponsiveContainer>
         )}
-      </div>
+      </div>        
     </div>
   );
 

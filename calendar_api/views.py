@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import EventSession, PingLog, Target
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
 # Import your features script (assuming it's in a utils subfolder)
-from .utils import features 
+from .utils import features, predictor
 import numpy as np
 from django.utils import timezone as django_tz # For Django-specific time needs
 from datetime import datetime, timedelta, timezone
@@ -31,6 +31,15 @@ class TargetViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetSerializer
 
+class TrainModelView(APIView):
+    """Endpoint to trigger baseline calculation manually from the UI dashboard."""
+    def post(self, request):
+        try:
+            profiles = predictor.train_baseline_profiles(days_back=30)
+            return Response({"status": "Model successfully retrained", "profiles": profiles})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 # Add the new APIView for the ML Traffic Monitor
 class PingDataView(APIView):
     def get(self, request):
@@ -46,7 +55,7 @@ class PingDataView(APIView):
         start = datetime.fromisoformat(start_str).replace(tzinfo=JST) if start_str else now - timedelta(minutes=30)
         end = datetime.fromisoformat(end_str).replace(tzinfo=JST) if end_str else now
         
-        # 3. Fetch ONLY the requested slice  Fetch Network Telemetry
+        # 3. Fetch ONLY the requested slice  Fetch Network Telemetry. Gather Historical Actual Logs
         logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
         # --- CRITICAL MISSING BLOCK START ---
@@ -58,23 +67,17 @@ class PingDataView(APIView):
 
         # 4. ML Processing for that specific window
         agg_features, agg_times = features.make_features(
-            timestamps, 
-            rtts, 
-            timeouts, 
-            agg_seconds=60, 
-            tz=JST, 
-            start_window=start, 
-            end_window=end
+            timestamps, rtts, timeouts, agg_seconds=60, tz=JST, start_window=start, end_window=end
         )
 
+        # 2. Compute Statistical Forecast Curve Over Same Window
+        forecast_data = predictor.forecast_remaining_day(start, end)
+
+        # 3. Gather Calendar Overlaps
         # 4. Return the JSON package
         # FETCH OVERLAPPING CALENDAR EVENTS FOR THIS VISUAL WINDOW
         # If an event starts before the window ends, and ends after the window starts, it overlaps.
-        overlapping_events = EventSession.objects.filter(
-            start_ts__lt=end,
-            end_ts__gt=start
-        ).order_by('start_ts')
-
+        overlapping_events = EventSession.objects.filter(start_ts__lt=end, end_ts__gt=start).order_by('start_ts')
         events_payload = [{
             "id": evt.session_id,
             "title": evt.event_name,
@@ -89,5 +92,6 @@ class PingDataView(APIView):
             "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [], # Mean RTT
             "jitters": agg_features[:, 1].tolist() if len(agg_features) > 0 else [],  # Jitter Standard Deviation
             "loss_rates": agg_features[:, 2].tolist() if len(agg_features) > 0 else [],
+            "forecast": forecast_data,  # Direct alignment vector mapping
             "events": events_payload # Forwarded payload for the concurrent timeline track
         })
