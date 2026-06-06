@@ -58,30 +58,35 @@ function App() {
         return;
       }
 
+      const now = new Date(); // Current real-time clock anchor
       // Map combined properties into unified array models for chart ingestion
       // Map backend datasets into synchronous React chart coordinates
       // Combine 'times' and 'features' into a format Recharts understands
+      // Map combined properties into unified array models for chart ingestion
       const chartPoints = data.times.map((t, i) => {
-        // Format the time string for the X-Axis (e.g., "20:46")
+        const binTime = new Date(t);
+        const isFuture = binTime > now; // Check if this time slot is in the future
+
         const rtt = data.features[i];
         const jitter = data.jitters ? data.jitters[i] : 0;
         
         // Find matching minute item in forecast array matrix
         const matchingForecast = data.forecast ? data.forecast.find(f => 
           new Date(f.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) === 
-          new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          binTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         ) : null;
 
         return {
-          time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          // Ensure the key matches the <Line dataKey="rtt" ... /> in your JSX
-          rawTime: new Date(t), // Kept for interval parsing 
-          rtt: rtt,
-          // Generate explicit high/low error boundaries for the chart shading track
-          jitterHigh: rtt + jitter,
-          jitterLow: Math.max(0, rtt - jitter), // Clamped to zero to prevent invalid negative latencies 
-          loss: data.loss_rates ? data.loss_rates[i] : 0,
-          // Append Predicted Parameters
+          time: binTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          rawTime: binTime, 
+          
+          // Hide actual metrics completely if the time slot has not come yet
+          rtt: isFuture ? null : rtt,
+          jitterHigh: isFuture ? null : parseFloat(Number(rtt + jitter).toFixed(2)),
+          jitterLow: isFuture ? null : parseFloat(Number(Math.max(0, rtt - jitter)).toFixed(2)), 
+          loss: isFuture ? null : (data.loss_rates ? data.loss_rates[i] : 0),
+          
+          // Pull the statistical prediction profiles
           predRtt: matchingForecast ? matchingForecast.pred_rtt : null,
           predLoss: matchingForecast ? matchingForecast.pred_loss : 0
         };
@@ -306,64 +311,79 @@ function App() {
   const renderDashboard = () => (
     <div className="dashboard-view" style={{ background: '#f9fafb', paddingTop: '10px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Unified Traffic Telemetry Dashboard</h2>
+        <h2>Traffic Dashboard</h2>
         
-        {/* Unified Operational Controls Grouping */}
+        {/* Control Row Layout Panel */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input type="datetime-local" value={range.start} onChange={(e) => setRange({ ...range, start: e.target.value })}/>
+          <input 
+            type="datetime-local" 
+            value={range.start} 
+            onChange={(e) => setRange({ ...range, start: e.target.value })}
+          />
           <span>to</span>
-          <input type="datetime-local" value={range.end} onChange={(e) => setRange({ ...range, end: e.target.value })}/>
+          <input 
+            type="datetime-local" 
+            value={range.end} 
+            onChange={(e) => setRange({ ...range, end: e.target.value })}
+          />
           
           <button onClick={handleManualUpdate} style={{ padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
             Update Window
           </button>
 
           <button onClick={() => { handleManualUpdate(); alert("Projected curves overlay refreshed based on calendar parameters."); }} style={{ padding: '6px 12px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-            🔮 Predict Traffic
+            Predict Traffic
           </button>
 
           <button onClick={handleTrainModel} style={{ padding: '6px 12px', background: '#4b5563', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-            ⚙️ Train Model
+            Train Model
           </button>
         </div>
         <button onClick={() => setViewMode('calendar')} style={{ padding: '6px 12px', cursor: 'pointer' }}>Back to Calendar</button>
       </div>
 
-      {/* TIER 1 Chart Canvas: Overlaying Projected Dashed Traces */}
+      {/* TIER 1: Latency Profile Line Chart (Stretched Y-Axis / Text-Only Jitter) */}
       <div style={{ height: '320px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
-        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Latency Variance Profile (Solid Actual vs Dashed Forecast)</h4>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Latency Profile (Actual vs Predicted)</h4>
         <ResponsiveContainer width="100%" height="90%">
           <AreaChart data={integratedChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
-            <YAxis label={{ value: 'ms', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Area type="monotone" dataKey="jitterHigh" stroke="none" fill="#9ca3af" fillOpacity={0.2} connectNulls name="Actual Variance Bound"/>
-            <Area type="monotone" dataKey="jitterLow" stroke="none" fill="#9ca3af" fillOpacity={0.2} connectNulls showMark={false}/>
-            <Area type="monotone" dataKey="rtt" stroke="#111827" strokeWidth={2.5} fill="none" name="Actual Mean RTT" connectNulls />
+            <YAxis width={60} label={{ value: 'ms', angle: -90, position: 'insideLeft' }} domain={[0, 'auto']} /> 
             
-            {/* Predicted Curve Overlay Trace Node */}
-            <Area type="monotone" dataKey="predRtt" stroke="#dc2626" strokeWidth={2.5} strokeDasharray="6 4" fill="none" name="Forecasted RTT Profile" connectNulls />
+            <Tooltip 
+              formatter={(value, name, props) => {
+                if (name === "Actual Mean RTT" && props.payload.rtt !== null) {
+                  return [
+                    `${value} ms (Jitter Upper Boundary: ${props.payload.jitterHigh} ms, Jitter Lower Boundary: ${props.payload.jitterLow} ms)`,
+                    name
+                  ];
+                }
+                return [`${value} ms`, name];
+              }}
+            />
+            
+            <Area type="monotone" dataKey="rtt" stroke="#111827" strokeWidth={2.5} fill="none" name="Actual Mean RTT" connectNulls />
+            <Area type="monotone" dataKey="predRtt" stroke="#dc2626" strokeWidth={2.5} strokeDasharray="6 4" fill="none" name="Predicted Mean RTT" connectNulls />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* TIER 2 Chart Canvas: Redder Gradation Cells for Heavy Predicted Loading */}
+      {/* TIER 2: Packet Loss Histogram */}
       <div style={{ height: '180px', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
-        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Packet Drop Ratios (Solid Actual vs Highlighted Forecast Risk)</h4>
+        <h4 style={{ margin: '0 0 10px 0', color: '#4b5563' }}>Packet Loss Ratios</h4>
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={integratedChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
-            <YAxis domain={[0, 1]} tickFormatter={(val) => `${(val * 100).toFixed(0)}%`} />
-            <Tooltip />
+            <YAxis width={60} domain={[0, 1]} tickFormatter={(val) => `${(val * 100).toFixed(0)}%`} tick={{ fill: '#4b5563' }} />
+            <Tooltip formatter={(val) => [`${(val * 100).toFixed(1)}%`, 'Drop Density']} />
             <Bar dataKey="loss">
               {integratedChartData.map((entry, index) => {
-                // If forecast model expects heavy traffic loss spikes, shift palette to deep crimson red
                 const isHeavyPrediction = entry.predLoss > 0.15;
                 const cellColor = isHeavyPrediction 
-                  ? `rgba(153, 27, 27, ${Math.max(0.4, entry.loss || entry.predLoss)})` // Dark Red Outage Alert
-                  : `rgba(239, 68, 68, ${Math.max(0.15, entry.loss)})`; // Standard Telemetry trace
+                  ? `rgba(153, 27, 27, ${Math.max(0.4, entry.loss || entry.predLoss)})` 
+                  : `rgba(239, 68, 68, ${Math.max(0.15, entry.loss)})`; 
                 return <Cell key={`cell-${index}`} fill={cellColor} />;
               })}
             </Bar>
@@ -371,16 +391,17 @@ function App() {
         </ResponsiveContainer>
       </div>
 
-      {/* TIER 3: Interactive Multi-Lane Tracks */}
+      {/* TIER 3: Event Scheduler Lane Tracker (Perfect Vertical Alignment) */}
       <div style={{ height: `${120 + (totalLanes * 40)}px`, background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <h4 style={{ margin: '0 0 15px 0', color: '#4b5563' }}>Active Scheduled Overlapping Operations Tracker</h4>
+        <h4 style={{ margin: '0 0 15px 0', color: '#4b5563' }}>Event Scheduler</h4>
         {totalLanes === 0 ? (
-          <p style={{ color: '#9ca3af', fontSize: '13px' }}>No operational parameters scheduled inside this monitoring window.</p>
+          <p style={{ color: '#9ca3af', fontSize: '13px' }}>No event is monitored.</p>
         ) : (
           <ResponsiveContainer width="100%" height="80%">
             <BarChart data={integratedChartData} barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis dataKey="time" tick={{ fill: '#4b5563', fontSize: 11 }} />
-              <YAxis hide domain={[0, 1]} />
+              <YAxis width={60} domain={[0, 1]} tickFormatter={() => ''} axisLine={true} tickLine={false} />
               <Tooltip 
                 cursor={{ fill: '#f3f4f6', opacity: 0.4 }}
                 formatter={(value, name, props) => {
@@ -392,12 +413,19 @@ function App() {
                 }} 
               />
               {Array.from({ length: totalLanes }).map((_, laneIdx) => (
-                <Bar key={`lane_${laneIdx}`} dataKey={`lane_${laneIdx}`} stackId="gantt" fill="#3b82f6" radius={4} maxBarSize={28} />
+                <Bar 
+                  key={`lane_${laneIdx}`} 
+                  dataKey={`lane_${laneIdx}`} 
+                  stackId="gantt" 
+                  fill="#3b82f6" 
+                  radius={4} 
+                  maxBarSize={28} 
+                />
               ))}
             </BarChart>
           </ResponsiveContainer>
         )}
-      </div>        
+      </div>
     </div>
   );
 
@@ -405,7 +433,7 @@ function App() {
   const renderCalendar = () => (
     <div className="calendar-view">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Operational Planning Calendar</h2>
+        <h2>Event Calendar</h2>
         <button onClick={switchToDashboard} className="btn-dashboard" style={{ padding: '8px 16px', background: '#111827', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>View Dashboard</button>
       </div>
       <FullCalendar
@@ -447,7 +475,7 @@ function App() {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', marginBottom: '20px' }}>
-        <h1>Network Traffic Analytics Monitor</h1>
+        <h1>Network Traffic EDA Platform</h1>
         <div style={{ fontSize: '14px', color: '#6b7280' }}>
           Status: {isAuthenticated ? <strong style={{ color: '#10b981' }}>Admin Mode</strong> : <strong style={{ color: '#ef4444' }}>Read-Only</strong>}
         </div>

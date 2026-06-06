@@ -107,8 +107,8 @@ def make_features(timestamps, rtts, timeouts, agg_seconds=60, tz=None, one_hot=F
             #!!!!!!!!!!! inputation logic !!!!!!!!!!!!!!
             # No data collected for this minute: Use stable imputation baseline
             # Imputation baseline for complete monitoring gaps (No pings attempted)
-            mean_rtt = 5.5
-            jitter = 0.0 #jitter = 2.1
+            mean_rtt = 3.0
+            jitter = 0.0 #jitter = 0.5
             loss_rate = 0.0
         else:
             rtt_window = rtts[mask]
@@ -123,8 +123,8 @@ def make_features(timestamps, rtts, timeouts, agg_seconds=60, tz=None, one_hot=F
                 jitter = rtt_window.std()
 
             else:
-                mean_rtt = 100 #mean_rtt = 5.5
-                jitter = 0.0 #jitter = 2.1
+                mean_rtt = 100 #mean_rtt = 3.0
+                jitter = 0.0 #jitter = 0.5
             
             # Loss rate calculation from timeout flags
             loss_rate = timeout_window.mean() if len(timeout_window) > 0 else 0.0
