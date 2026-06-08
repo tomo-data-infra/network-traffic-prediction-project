@@ -1,0 +1,67 @@
+**********************
+PowerShell transcript start
+Start time: 20260609064449
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 16536
+PSVersion: 7.6.2
+PSEdition: Core
+GitCommitId: 7.6.2
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260609_064449.txt
+PS C:\Users\user> wsl
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ psql -U postgres -d log_collector
+Password for user postgres:
+psql (16.14 (Ubuntu 16.14-0ubuntu0.24.04.1))
+Type "help" for help.
+
+log_collector=# \dt
+                   List of relations
+ Schema |            Name            | Type  |  Owner
+--------+----------------------------+-------+----------
+ public | auth_group                 | table | postgres
+ public | auth_group_permissions     | table | postgres
+ public | auth_permission            | table | postgres
+ public | auth_user                  | table | postgres
+ public | auth_user_groups           | table | postgres
+ public | auth_user_user_permissions | table | postgres
+ public | django_admin_log           | table | postgres
+ public | django_content_type        | table | postgres
+ public | django_migrations          | table | postgres
+ public | django_session             | table | postgres
+ public | event_sessions             | table | postgres
+ public | ping_logs                  | table | postgres
+ public | targets                    | table | postgres
+(13 rows)
+
+log_collector=# CREATE INDEX idx_pinglog_target_ts ON ping_logs (target_id, ts DESC);
+CREATE INDEX
+log_collector=# CREATE MATERIALIZED VIEW ping_logs_1m AS
+SELECT
+    date_trunc('minute', ts) AS ts_minute,
+    target_id,
+    AVG(rtt_ms) AS mean_rtt,
+    MAX(rtt_ms) AS highest_rtt,
+    MIN(rtt_ms) AS lowest_rtt,
+    STDDEV(rtt_ms) AS jitter,
+    AVG(CASE WHEN is_timeout THEN 1 ELSE 0 END) AS packet_loss_rate
+FROM ping_logs
+GROUP BY date_trunc('minute', ts), target_id;
+
+-- Build an index on the materialized view for instantaneous dashboard loading
+CREATE UNIQUE INDEX idx_ping_logs_1m_ts ON ping_logs_1m (target_id, ts_minute DESC);
+SELECT 73933
+CREATE INDEX
+log_collector=# \q
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ exit
+logout
+PS C:\Users\user>
