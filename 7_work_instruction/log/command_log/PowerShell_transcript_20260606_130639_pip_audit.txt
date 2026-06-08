@@ -1,0 +1,42 @@
+**********************
+PowerShell transcript start
+Start time: 20260606130639
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -noexit -command try { . "c:\Users\user\AppData\Local\Programs\Microsoft VS Code\0958016b2a\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Process ID: 44628
+PSVersion: 7.6.2
+PSEdition: Core
+GitCommitId: 7.6.2
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260606_130639.txt
+PS>try { . "c:\Users\user\AppData\Local\Programs\Microsoft VS Code\0958016b2a\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+]633;A]633;P;Cwd=C:\x5cUsers\x5cuser\x5cDocuments\x5cprojects\x5cping_rtt_predictionPS C:\Users\user\Documents\projects\ping_rtt_prediction> ]633;B
+PS>wsl
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        + list(compatible_existing_constraints.values()),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        check_supported_wheels=not self.options.target_dir,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/mnt/c/Users/user/Documents/projects/ping_rtt_prediction/venv/lib/python3.14/site-packages/pip/_internal/resolution/resolvelib/resolver.py", line 108,
+in resolve
+    raise error from e
+pip._internal.exceptions.DistributionNotFound: No matching distribution found for json
+(venv) user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ exit
+logout
+]633;D;1]633;A]633;P;Cwd=C:\x5cUsers\x5cuser\x5cDocuments\x5cprojects\x5cping_rtt_predictionPS C:\Users\user\Documents\projects\ping_rtt_prediction> ]633;B
+PS>exit
+**********************
+PowerShell transcript end
+End time: 20260606134519
+**********************

@@ -1,11 +1,15 @@
+import json
+import ollama
+import numpy as np
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
+from django.db.models import Max, Avg
 from .models import EventSession, PingLog, Target
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
 # Import your features script (assuming it's in a utils subfolder)
 from .utils import features, predictor
-import numpy as np
 from django.utils import timezone as django_tz # For Django-specific time needs
 from datetime import datetime, timedelta, timezone
 
@@ -95,3 +99,86 @@ class PingDataView(APIView):
             "forecast": forecast_data,  # Direct alignment vector mapping
             "events": events_payload # Forwarded payload for the concurrent timeline track
         })
+
+# This uses Ollama to translate natural language into structured parameters or direct queries, handles both English and Japanese safely and queries the database using high-performance Django ORM filters.
+class TrafficAgentView(APIView):
+    def post(self, request):
+        user_question = request.data.get("question", "").strip()
+        if not user_question:
+            return Response({"error": "No question provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # SYSTEM PROMPT: Forces Ollama to act as a structured intent parser
+        system_prompt = """
+        You are an AI NetOps routing coordinator. Your job is to parse the user's network query and return a structured JSON intent object.
+        
+        Analyze if the question is asking for:
+        1. "highest_rtt" (Maximum RTT on a given date)
+        2. "average_rtt" (Average RTT at a specific date/hour)
+        3. "specific_rtt" (RTT at an exact timestamp)
+        
+        Extract the target date string in 'YYYY-MM-DD' format and hour if specified. 
+        Assume the year is 2026 if not specified.
+        
+        Output ONLY a valid JSON object matching these examples:
+        {"intent": "highest_rtt", "date": "2026-05-22"}
+        {"intent": "average_rtt", "date": "2026-05-22", "hour": 11}
+        {"intent": "specific_rtt", "date": "2026-05-22", "hour": 11, "minute": 0}
+        
+        If you do not know the answer, the query is unrelated, or it doesn't match these formats, output exactly:
+        {"error": "I don't know."}
+
+        Do not include markdown tags like ```json.
+        """
+
+        try:
+            # 1. Ask Ollama to evaluate intent layout
+            intent_res = ollama.generate(model='llama3', system=system_prompt, prompt=user_question)
+            intent_data = json.loads(intent_res['response'].strip())
+
+            if "error" in intent_data:
+                return Response({"answer": "I don't know. / 分かりません。"})
+
+            intent = intent_data.get("intent")
+            target_date_str = intent_data.get("date")
+            parsed_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
+
+            # 2. Map Intents cleanly to Django ORM Queries instead of raw raw SQL concatenation strings
+            db_result = "No data found."
+            
+            if intent == "highest_rtt":
+                max_val = PingLog.objects.filter(ts__date=parsed_date, target_id=1).aggregate(Max('rtt_ms'))['rtt_ms__max']
+                if max_val: db_result = f"Highest RTT: {max_val:.2f} ms"
+
+            elif intent == "average_rtt" or intent == "specific_rtt":
+                hour = intent_data.get("hour", 0)
+                minute = intent_data.get("minute", None)
+                
+                if minute is not None:
+                    # Precise 1-minute window block matching
+                    start_time = datetime.combine(parsed_date, datetime.min.time()).replace(hour=hour, minute=minute, tzinfo=JST)
+                    end_time = start_time + timedelta(minutes=1)
+                else:
+                    # Full 1-hour window tracking bracket
+                    start_time = datetime.combine(parsed_date, datetime.min.time()).replace(hour=hour, tzinfo=JST)
+                    end_time = start_time + timedelta(hours=1)
+                
+                metrics = PingLog.objects.filter(ts__range=[start_time, end_time], target_id=1).aggregate(Avg('rtt_ms'))
+                avg_val = metrics['rtt_ms__avg']
+                if avg_val: db_result = f"Average RTT: {avg_val:.2f} ms"
+
+            # 3. Final Synthesis step: Feed data results back to local LLM to generate user natural language
+            synthesis_prompt = f"""
+            User Question: {user_question}
+            Database Query Metrics Result: {db_result}
+            Target Window: {target_date_str}
+            
+            Synthesize a short, direct operational summary response. 
+            If the question is in Japanese, respond in Japanese. If in English, respond in English.
+            """
+            final_res = ollama.generate(model='llama3', prompt=synthesis_prompt)
+            
+            return Response({"answer": final_res['response'].strip()})
+
+        except Exception as e:
+            print(f"Agent Pipeline Failure: {str(e)}")
+            return Response({"answer": "I don't know. (Internal handling discrepancy)"})
