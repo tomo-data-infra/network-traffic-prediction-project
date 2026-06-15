@@ -1,10 +1,12 @@
 import json
 import ollama
 import numpy as np
+import threading
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import connection, transaction
 from django.db.models import Max, Avg
 from .models import EventSession, PingLog, Target
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
@@ -100,97 +102,168 @@ class PingDataView(APIView):
             "events": events_payload # Forwarded payload for the concurrent timeline track
         })
 
+def run_database_maintenance():
+    """
+    100% SAFE OPERATION LAYER.
+    Updates Materialized Views on an isolated background thread.
+    Never deletes or alters raw historical data rows.
+    """
+    now = timezone.now()
+    print(f"[Background DB Task] Maintenance initialized at {now.strftime('%Y-%m-%d %H:%M:%S')} JST")
+
+    try:
+        with connection.cursor() as cursor:
+            print("[Background DB Task] Refreshing Minute Rollups...")
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY minute_rollups;")
+            
+            print("[Background DB Task] Refreshing Hourly Rollups...")
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY hourly_rollups;")
+            
+            print("[Background DB Task] Refreshing Daily Rollups...")
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY daily_rollups;")
+            
+            print("[Background DB Task] Optimizing database index lookup paths...")
+            cursor.execute("ANALYZE ping_logs;")
+            
+        print("[Background DB Task] Database optimization cycle completed successfully. Zero data loss.")
+        
+    except Exception as e:
+        print(f"[Background DB Task Error] Materialized View refresh failure: {str(e)}")
+
+
+class DatabaseMaintenanceView(APIView):
+    """API endpoint to trigger view updates from the frontend dashboard."""
+    def post(self, request, *args, **kwargs):
+        try:
+            maintenance_thread = threading.Thread(target=run_database_maintenance)
+            maintenance_thread.daemon = True
+            maintenance_thread.start()
+            
+            return Response({
+                "status": "success",
+                "message": "Database optimization sequence started in the background."
+            }, status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": f"Failed to initialize background task: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 # This uses Ollama to translate natural language into structured parameters or direct queries, handles both English and Japanese safely and queries the database using high-performance Django ORM filters.
 class TrafficAgentView(APIView):
+
+    def query_database(self, sql_string):
+        """Executes read-only SQL queries securely with structural safety blocks."""
+        try:
+            clean_sql = sql_string.strip().rstrip(';')
+            upper_sql = clean_sql.upper()
+
+            # 🛑 CRITICAL SECURITY GUARDRAIL: Block any attempt to delete, alter, or drop data structures
+            destructive_keywords = [
+                "DELETE", "DROP", "TRUNCATE", "UPDATE", "INSERT", 
+                "ALTER", "GRANT", "REVOKE", "CREATE", "REPLACE", 
+                "VACUUM", "COMMENT", "EXECUTE", "PREPARE"
+            ]
+            if any(keyword in upper_sql for keyword in destructive_keywords):
+                print(f"[SECURITY ALERT] Destructive query attempt blocked: {clean_sql}")
+                return "Database Error: Operation access denied. Only SELECT queries are permitted."
+
+            # Force protective row limits if the query is an open-ended dump
+            if "LIMIT" not in upper_sql and "COUNT" not in upper_sql and "AVG" not in upper_sql and "MAX" not in upper_sql:
+                clean_sql += " LIMIT 100"
+            
+            with connection.cursor() as cursor:
+                cursor.execute(clean_sql)
+                # columns = [col for col in cursor.description]
+                columns = [col.name for col in cursor.description]
+                rows = cursor.fetchmany(100) 
+                return json.dumps([dict(zip(columns, row)) for row in rows], default=str)
+        except Exception as e:
+            return f"Database Error: {str(e)}"
+        
     def post(self, request):
         user_question = request.data.get("question", "").strip()
         if not user_question:
             return Response({"error": "No question provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # SYSTEM PROMPT: Forces Ollama to act as a structured intent parser
+        # SYSTEM PROMPT: Strict Read-Only Rules + Full Tiered View Awareness
         system_prompt = """
         You are an AI NetOps Data Agent. Your task is to analyze the user's network query and return a valid JSON object containing an optimized PostgreSQL query string.
 
         DATABASE LAYERS AVAILABLE:
-        1. View: ping_logs_1m (A 1-minute rollup summary table. Use this for ALL wide macro queries spanning multiple days or an entire month to ensure lightning-fast speed).
-           Columns:
-             - ts_minute: TIMESTAMP WITH TIME ZONE
-             - target_id: INTEGER
-             - mean_rtt: DOUBLE PRECISION
-             - highest_rtt: DOUBLE PRECISION
-             - lowest_rtt: DOUBLE PRECISION
-             - jitter: DOUBLE PRECISION
-             - packet_loss_rate: DOUBLE PRECISION
+        1. View: daily_rollups (1-day aggregates. Use ONLY for broad macro queries spanning more than 7 days, full weeks, or months).
+           - EXACT columns you can use: ts_day, target_id, mean_rtt, highest_rtt, lowest_rtt, packet_loss_rate
+        2. View: hourly_rollups (1-hour aggregates. Use ONLY for queries spanning between 24 hours and 7 days, or when asking for a specific hour block like '12:00 to 13:00').
+           - EXACT columns you can use: ts_hour, target_id, mean_rtt, highest_rtt, lowest_rtt, packet_loss_rate
+        3. View: minute_rollups (1-minute aggregates. Use for detailed intraday queries spanning 2 to 24 hours).
+           - EXACT columns you can use: ts_minute, target_id, mean_rtt, highest_rtt, lowest_rtt, packet_loss_rate
+        4. Table: ping_logs (Raw 1-second entries. Use ONLY when the user explicitly asks for precise, second-by-second data or single-second specific details).
+           - EXACT columns you can use: ts, rtt_ms, is_timeout, target_id
 
-        2. Table: ping_logs (Raw per-second network logs. Use ONLY for precise calculations within a single day/hour or exact timestamps).
-           Columns:
-             - ts: TIMESTAMP WITH TIME ZONE
-             - rtt_ms: DOUBLE PRECISION
-             - is_timeout: BOOLEAN
-             - target_id: INTEGER
-
-        CRITICAL PERFORMANCE RULES:
+        CRITICAL SECURITY & PERFORMANCE RULES:
+        - You are strictly a READ-ONLY data engine assistant. You are ONLY allowed to generate 'SELECT' queries.
+        - You are forbidden from modifying any data, schemas, or database states.
+        - NEVER generate commands containing: "DELETE", "DROP", "TRUNCATE", "UPDATE", "INSERT", "ALTER", "GRANT", "REVOKE", "CREATE", "REPLACE", "VACUUM", or "COMMENT".
         - ALWAYS filter by "target_id = 1".
-        - NEVER use date formatting functions on the timestamp columns like "ts::date" or "EXTRACT()". Use explicit chronological operators (>=, <, NOW() - INTERVAL) to keep queries optimized.
+        - NEVER use date formatting functions on timestamp columns like "ts_minute::date" or "EXTRACT()". Use explicit chronological operators (>=, <) to keep queries optimized.
+        - MANDATORY ROUTING RULE: For any question about a specific date or single day (e.g., 'May 22'), you MUST query FROM 'minute_rollups' using the 'ts_minute' column.
+        - EXPLICIT SYNTAX EXAMPLE FOR A SINGLE DATE: SELECT highest_rtt FROM minute_rollups WHERE ts_minute >= '2026-05-22 00:00:00+09' AND ts_minute < '2026-05-23 00:00:00+09';
         - Assume the current year is 2026 if omitted.
 
         OUTPUT FORMAT:
-        Output ONLY a valid JSON object matching this schema. Do not wrap it in markdown tags like ```json.
+        Output ONLY a valid JSON object matching this schema. Do not wrap it in markdown tags.
         {"sql": "SELECT ..."}
 
-        If the question cannot be answered or is unrelated, return exactly:
+        If the question cannot be answered, is dangerous, or is unrelated, return exactly:
         {"error": "I don't know."}
         """
 
         try:
-            # 1. Ask Ollama to evaluate intent layout
-            intent_res = ollama.generate(model='llama3', system=system_prompt, prompt=user_question)
-            intent_data = json.loads(intent_res['response'].strip())
+            # 1. Get raw query instructions from Ollama
+            intent_res = ollama.generate(
+                model='qwen2.5:1.5b', #'llama3', # 'qwen2.5:1.5b', 
+                system=system_prompt, 
+                prompt=user_question,
+                options={"temperature": 0.0}
+                )
+            
+            # Clean possible markdown wrapping code blocks if generated by accident
+            raw_response = intent_res['response'].strip()
+            if raw_response.startswith("```json"):
+                raw_response = raw_response.lstrip("```json").rstrip("```")
+            elif raw_response.startswith("```"):
+                raw_response = raw_response.lstrip("```").rstrip("```")
+                
+            intent_data = json.loads(raw_response.strip())
 
             if "error" in intent_data:
                 return Response({"answer": "I don't know. / 分かりません。"})
 
-            intent = intent_data.get("intent")
-            target_date_str = intent_data.get("date")
-            parsed_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
-
-            # 2. Map Intents cleanly to Django ORM Queries instead of raw raw SQL concatenation strings
-            db_result = "No data found."
+            # 2. Extract the generated SQL string directly
+            sql_query = intent_data.get("sql")
+            if not sql_query:
+                return Response({"answer": "I don't know. / 分かりません。"})
             
-            if intent == "highest_rtt":
-                max_val = PingLog.objects.filter(ts__date=parsed_date, target_id=1).aggregate(Max('rtt_ms'))['rtt_ms__max']
-                if max_val: db_result = f"Highest RTT: {max_val:.2f} ms"
+            print(f"[Generated AI SQL Query]: {sql_query}")
 
-            elif intent == "average_rtt" or intent == "specific_rtt":
-                hour = intent_data.get("hour", 0)
-                minute = intent_data.get("minute", None)
-                
-                if minute is not None:
-                    # Precise 1-minute window block matching
-                    start_time = datetime.combine(parsed_date, datetime.min.time()).replace(hour=hour, minute=minute, tzinfo=JST)
-                    end_time = start_time + timedelta(minutes=1)
-                else:
-                    # Full 1-hour window tracking bracket
-                    start_time = datetime.combine(parsed_date, datetime.min.time()).replace(hour=hour, tzinfo=JST)
-                    end_time = start_time + timedelta(hours=1)
-                
-                metrics = PingLog.objects.filter(ts__range=[start_time, end_time], target_id=1).aggregate(Avg('rtt_ms'))
-                avg_val = metrics['rtt_ms__avg']
-                if avg_val: db_result = f"Average RTT: {avg_val:.2f} ms"
-
-            # 3. Final Synthesis step: Feed data results back to local LLM to generate user natural language
+            # 3. Query your indexed PostgreSQL tables instantly via protected cursor method
+            db_result = self.query_database(sql_query)
+            
+            # 4. Feed the raw table results back to Ollama to write a natural message response
             synthesis_prompt = f"""
             User Question: {user_question}
-            Database Query Metrics Result: {db_result}
-            Target Window: {target_date_str}
+            Database Execution Output Matrix: {db_result}
             
-            Synthesize a short, direct operational summary response. 
-            If the question is in Japanese, respond in Japanese. If in English, respond in English.
+            Synthesize a short, direct network operational summary response. 
+            If the user question is in Japanese, respond in Japanese. If in English, respond in English.
             """
-            final_res = ollama.generate(model='llama3', prompt=synthesis_prompt)
+            final_res = ollama.generate(
+                model='qwen2.5:1.5b', #'llama3', 
+                prompt=synthesis_prompt
+                )
             
             return Response({"answer": final_res['response'].strip()})
 
         except Exception as e:
-            print(f"Agent Pipeline Failure: {str(e)}")
-            return Response({"answer": "I don't know. (Internal handling discrepancy)"})
+            print(f"Agent Pipeline Failure Trace: {str(e)}")
+            return Response({"answer": "I don't know. / 分かりません。"})
