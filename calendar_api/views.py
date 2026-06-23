@@ -250,19 +250,27 @@ class TrafficAgentView(APIView):
             db_result = self.query_database(sql_query)
             
             # 4. Feed the raw table results back to Ollama to write a natural message response
-            synthesis_prompt = f"""
-            User Question: {user_question}
-            Database Execution Output Matrix: {db_result}
+            print("[AI Agent] Requesting natural linguistic dashboard summary...")
+            synthesis_prompt = f"User Question: {user_question}\nDatabase Output Matrix: {db_result}"
             
-            Synthesize a short, direct network operational summary response. 
-            If the user question is in Japanese, respond in Japanese. If in English, respond in English.
-            """
-            final_res = ollama.generate(
-                model='qwen2.5:1.5b', #'llama3', 
-                prompt=synthesis_prompt
-                )
+            final_res = ollama.chat(
+                model='qwen2.5:1.5b',
+                messages=[
+                    {
+                        'role': 'system', 
+                        'content': (
+                            'Synthesize a short, direct network operational summary response. '
+                            'CRITICAL: Always display RTT latency numbers in exact milliseconds (ms) '
+                            'as written in the database matrix. Do not round up or convert them to seconds. '
+                            'If the user question is in Japanese, respond in Japanese. If in English, respond in English.'
+                        )
+                    },
+                    {'role': 'user', 'content': synthesis_prompt}
+                ]
+            )
             
-            return Response({"answer": final_res['response'].strip()})
+            final_text = final_res['message']['content'].strip()
+            return Response({"answer": final_text})
 
         except Exception as e:
             print(f"Agent Pipeline Failure Trace: {str(e)}")

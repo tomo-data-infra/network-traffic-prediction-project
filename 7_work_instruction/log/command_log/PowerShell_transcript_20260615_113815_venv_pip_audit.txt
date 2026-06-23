@@ -1,0 +1,35 @@
+**********************
+PowerShell transcript start
+Start time: 20260615113815
+Username: DESKTOP-KTE041O\user
+RunAs User: DESKTOP-KTE041O\user
+Configuration Name: 
+Machine: DESKTOP-KTE041O (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll
+Process ID: 27692
+PSVersion: 7.6.2
+PSEdition: Core
+GitCommitId: 7.6.2
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is C:\Users\user\Documents\PowerShell\Transcript\PowerShell_transcript_20260615_113815.txt
+PS C:\Users\user> wsl
+-bash: /mnt/c/Users/user/Documents/projects/ping_rtt_prediction: Is a directory
+user@DESKTOP-KTE041O:/mnt/c/Users/user$ cd /mnt/c/Users/user/Documents/projects/ping_rtt_prediction
+user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ source venv/bin/activate
+(venv) user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ python -m pip install --upgrade pip
+Requirement already satisfied: pip in ./venv/lib/python3.14/site-packages (26.1.2)
+(venv) user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ pip-audit
+No known vulnerabilities found
+(venv) user@DESKTOP-KTE041O:/mnt/c/Users/user/Documents/projects/ping_rtt_prediction$ exit
+logout
+PS C:\Users\user> exit
+**********************
+PowerShell transcript end
+End time: 20260615114128
+**********************
