@@ -1,5 +1,0 @@
-PostgreSQL:
-5432
-
-React
-http://localhost:5173/
