@@ -1,15 +1,12 @@
 #!/bin/bash
 
-# Kill any old Django/Vite processes first
+# Terminate conflicting backend or frontend instances
 pkill -9 -f "manage.py"
 pkill -9 -f "vite"
 
-# Get the directory where THIS script is located
-# /mnt/c/Users/user/Documents/projects/ping_rtt_prediction
+# Dynamically lock onto the root directory where this script sits
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-
-# Move to the Parent Directory (the main project folder)
-cd "$SCRIPT_DIR/.."
+cd "$SCRIPT_DIR"
 
 # Start Django in the background
 echo "Starting Django Backend..."
