@@ -168,15 +168,20 @@ class TrafficAgentView(APIView):
                 print(f"[SECURITY ALERT] Destructive query attempt blocked: {clean_sql}")
                 return "Database Error: Operation access denied. Only SELECT queries are permitted."
 
-            # Force protective row limits if the query is an open-ended dump
-            if "LIMIT" not in upper_sql and "COUNT" not in upper_sql and "AVG" not in upper_sql and "MAX" not in upper_sql:
-                clean_sql += " LIMIT 100"
+            # 💡 SAFE AUTO-SORT UPGRADE: If it's a maximum query but lacks a limit, append it safely
+            if "HIGHEST_RTT" in upper_sql and "ORDER BY" not in upper_sql:
+                clean_sql += " ORDER BY highest_rtt DESC LIMIT 1"
+            elif "MEAN_RTT" in upper_sql and "ORDER BY" not in upper_sql:
+                clean_sql += " ORDER BY mean_rtt DESC LIMIT 1"
+            elif "PACKET_LOSS_RATE" in upper_sql and "ORDER BY" not in upper_sql:
+                clean_sql += " ORDER BY packet_loss_rate DESC LIMIT 1"
+            elif "LIMIT" not in upper_sql:
+                clean_sql += " LIMIT 1"
             
             with connection.cursor() as cursor:
                 cursor.execute(clean_sql)
-                # columns = [col for col in cursor.description]
                 columns = [col.name for col in cursor.description]
-                rows = cursor.fetchmany(100) 
+                rows = cursor.fetchmany(5) # We only ever need the top row for these metrics
                 return json.dumps([dict(zip(columns, row)) for row in rows], default=str)
         except Exception as e:
             return f"Database Error: {str(e)}"
@@ -197,8 +202,29 @@ class TrafficAgentView(APIView):
            - EXACT columns you can use: ts_hour, target_id, mean_rtt, highest_rtt, lowest_rtt, packet_loss_rate
         3. View: minute_rollups (1-minute aggregates. Use for detailed intraday queries spanning 2 to 24 hours).
            - EXACT columns you can use: ts_minute, target_id, mean_rtt, highest_rtt, lowest_rtt, packet_loss_rate
-        4. Table: ping_logs (Raw 1-second entries. Use ONLY when the user explicitly asks for precise, second-by-second data or single-second specific details).
-           - EXACT columns you can use: ts, rtt_ms, is_timeout, target_id
+
+        TEMPORAL ROUTING RULES:
+        - If the question asks about a specific day or date (e.g., 'June 19'), you MUST query FROM 'minute_rollups'.
+        - To return a single peak or highest metric value with its time, you MUST select BOTH the target metric and the 'ts_minute' column, and you MUST always append 'ORDER BY [metric_column] DESC LIMIT 1' to ensure only ONE row returns.
+        - ALWAYS include 'target_id = 1' in the WHERE clause constraints.
+
+        CRITICAL COLUMN DEFINITIONS:
+        - 'mean_rtt' stores the 1-minute AVERAGE baseline latency value. Use this when the user asks for "highest mean RTT", "highest average", or "worst average baseline".
+        - 'highest_rtt' stores the absolute worst 1-second INSTANTaneous latency spike that happened within that minute. Use this when the user asks for "highest RTT", "instant peak", "momentary surge", or "worst single second".
+
+        FEW-SHOT TRANSLATION SAMPLES (CRITICAL TEMPLATES TO MATCH):
+        
+        User: "What was the highest RTT on June 19?"
+        Target: Fetch HIGHEST instantaneous spike value and its time.
+        Query: {"sql": "SELECT ts_minute, highest_rtt FROM minute_rollups WHERE target_id = 1 AND ts_minute >= '2026-06-19 00:00:00+09' AND ts_minute < '2026-06-20 00:00:00+09' ORDER BY highest_rtt DESC LIMIT 1;"}
+
+        User: "What was the highest mean RTT on June 19?"
+        Target: Fetch HIGHEST 1-minute baseline average and its time.
+        Query: {"sql": "SELECT ts_minute, mean_rtt FROM minute_rollups WHERE target_id = 1 AND ts_minute >= '2026-06-19 00:00:00+09' AND ts_minute < '2026-06-20 00:00:00+09' ORDER BY mean_rtt DESC LIMIT 1;"}
+
+        User: "What was the highest packet loss rate on June 19?"
+        Target: Fetch HIGHEST packet drop percentage and its time.
+        Query: {"sql": "SELECT ts_minute, packet_loss_rate FROM minute_rollups WHERE target_id = 1 AND ts_minute >= '2026-06-19 00:00:00+09' AND ts_minute < '2026-06-20 00:00:00+09' ORDER BY packet_loss_rate DESC LIMIT 1;"}
 
         CRITICAL SECURITY & PERFORMANCE RULES:
         - You are strictly a READ-ONLY data engine assistant. You are ONLY allowed to generate 'SELECT' queries.
@@ -211,7 +237,7 @@ class TrafficAgentView(APIView):
         - Assume the current year is 2026 if omitted.
 
         OUTPUT FORMAT:
-        Output ONLY a valid JSON object matching this schema. Do not wrap it in markdown tags.
+        Output ONLY a valid JSON object matching the schema below. Never forget the 'ORDER BY' and 'LIMIT 1' statements for maximum metrics questions.
         {"sql": "SELECT ..."}
 
         If the question cannot be answered, is dangerous, or is unrelated, return exactly:
