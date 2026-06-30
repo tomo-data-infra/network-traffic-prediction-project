@@ -1,25 +1,14 @@
 """
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+URL configuration for the Network Traffic Project.
+Maps public REST API routes to core viewsets, custom ML endpoints, and background agents.
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from calendar_api.views import EventSessionViewSet, PingLogViewSet, TargetViewSet, PingDataView, TrafficAgentView, DatabaseMaintenanceView # Import your View
+from calendar_api.views import EventSessionViewSet, PingLogViewSet, TargetViewSet, TrainModelView, PingDataView, DatabaseMaintenanceView, TrafficAgentView
 
-# 1. Create a router and register our viewset with it.
+# Initialize Rest Framework Router for automated CRUD endpoints
 router = DefaultRouter()
 router.register(r'event_sessions', EventSessionViewSet)
 router.register(r'ping_logs', PingLogViewSet)
@@ -27,18 +16,22 @@ router.register(r'targets', TargetViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Group all API endpoints under 'api/'
+
+    # Unified structural API grouping
     path('api/', include([
-        # 1. Include the auto-generated ViewSet urls (EventSessions, etc.)
+        # Standard automated viewset routes (e.g., http://localhost:8000/api/xxxxxx/)
         path('', include(router.urls)),
         
-        # 2. Add your custom ML Ping Data endpoint
-        # React will now fetch this from: http://localhost:8000/api/ping_data/
+        # Custom ML Analytics Data Feed Endpoint (http://localhost:8000/api/ping_data/)
         path('ping_data/', PingDataView.as_view(), name='ping_data'),
+
+        # Ingestion Text-to-SQL AI Agent Interface Gateway (http://localhost:8000/api/traffic_agent/)
         path('traffic_agent/', TrafficAgentView.as_view(), name='traffic_agent'),
 
-        # Operational Maintenance Action Endpoint
-        # React will fetch this from: http://localhost:8000/api/maintenance/run/
+        # Baseline Machine Learning Model Retraining Trigger (http://localhost:8000/api/train_model/)
+        path('train_model/', TrainModelView.as_view(), name='train_model'),
+
+        # Operational Database Maintenance Action Route (http://localhost:8000/api/maintenance/run/)
         path('maintenance/run/', DatabaseMaintenanceView.as_view(), name='db-maintenance'),
     ])),
 ]

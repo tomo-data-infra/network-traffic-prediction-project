@@ -46,3 +46,19 @@ class Target(models.Model):
 
     def __str__(self):
         return self.label or self.ip
+    
+class AIAgentLog(models.Model):
+    """
+    Automated telemetry logging table for performance audits.
+    Captures user interactions, responses, and AI pipeline processing latency.
+    """
+    ts = models.DateTimeField(auto_now_add=True, primary_key=True) 
+    user_prompt = models.TextField()
+    generated_sql = models.TextField(null=True, blank=True)
+    db_output = models.TextField(null=True, blank=True)
+    final_response = models.TextField()
+    latency_seconds = models.FloatField()
+
+    class Meta:
+        db_table = 'ai_agent_logs'
+        managed = False

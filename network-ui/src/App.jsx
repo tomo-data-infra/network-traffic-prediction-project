@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import './App.css'; // Assuming you add the CSS below
+import './App.css'; 
 
 function App() {
   // --- States ---

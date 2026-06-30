@@ -1,4 +1,5 @@
 import json
+import time
 import ollama
 import numpy as np
 import threading
@@ -10,14 +11,12 @@ from django.db import connection, transaction
 from django.db.models import Max, Avg
 from .models import EventSession, PingLog, Target
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
-# Import your features script (assuming it's in a utils subfolder)
 from .utils import features, predictor
-from django.utils import timezone as django_tz # For Django-specific time needs
+from django.utils import timezone as django_tz
 from datetime import datetime, timedelta, timezone
 
 JST = timezone(timedelta(hours=9))
 
-# Keep your existing ViewSet for Calendar CRUD
 class EventSessionViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows event_sessions to be viewed or edited.
@@ -46,43 +45,64 @@ class TrainModelView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-# Add the new APIView for the ML Traffic Monitor
 class PingDataView(APIView):
+    """
+    API endpoint that delivers aggregated network telemetry, statistical forecasts, 
+    and concurrent calendar anomalies over a specific request time window.
+    """
     def get(self, request):
-        # 1. Get the designated period from React
+        # Get the designated period from React
         start_str = request.query_params.get("start")
         end_str = request.query_params.get("end")
 
         # Fallback logic: Use JST for a 30m window
         now = datetime.now(JST).replace(second=0, microsecond=0)
         
-        # 2. DEFAULT: Latest 30 mins if no period is designated
+        # DEFAULT: Latest 30 mins if no period is designated
         # DESIGNATED: Specific period if React sends it
-        start = datetime.fromisoformat(start_str).replace(tzinfo=JST) if start_str else now - timedelta(minutes=30)
-        end = datetime.fromisoformat(end_str).replace(tzinfo=JST) if end_str else now
+        try:
+            start = datetime.fromisoformat(start_str).replace(tzinfo=JST) if start_str else now - timedelta(minutes=30)
+            end = datetime.fromisoformat(end_str).replace(tzinfo=JST) if end_str else now
+        except ValueError:
+            return Response(
+                {"error": "Invalid date format configuration. Please pass clean ISO 8601 strings."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Defensive security validation windows. Chronological Check. Ensure start occurs before end.
+        if start >= end:
+            return Response(
+                {"error": "Chronological conflict: Start window parameter cannot occur after or equal to the end window."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
-        # 3. Fetch ONLY the requested slice  Fetch Network Telemetry. Gather Historical Actual Logs
+        # Out-of-Bounds Memory Ceiling Protection. Limit window requests to a safe window.
+        window_duration = end - start
+        if window_duration > timedelta(hours=12):
+            return Response(
+                {"error": "Resource safety constraint: Maximum query limit exceeded. Time windows must not span more than 7 days."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch precisely targeted database slices using Django ORM
+        # TODO: Refactor target_id selection dynamically via frontend picker.
+        # Pinning query scope strictly to primary target monitoring node (ID: 1) for current release phase.
         logs = PingLog.objects.filter(ts__range=[start, end], target_id=1).order_by('ts')
         
-        # --- CRITICAL MISSING BLOCK START ---
-        # Force explicit types to ensure empty dataframes do not cause out-of-bounds array crashes
+        # Build optimized high-speed array structures safely
         timestamps = np.array([l.ts for l in logs], dtype=object)
         rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in logs], dtype=float)
         timeouts = np.array([1 if l.is_timeout else 0 for l in logs], dtype=int)
-        # --- CRITICAL MISSING BLOCK END ---
 
-        # 4. ML Processing for that specific window
+        # Process machine learning aggregation arrays over verified time block
         agg_features, agg_times = features.make_features(
             timestamps, rtts, timeouts, agg_seconds=60, tz=JST, start_window=start, end_window=end
         )
 
-        # 2. Compute Statistical Forecast Curve Over Same Window
+        # Generate statistical forecast baseline expectations
         forecast_data = predictor.forecast_remaining_day(start, end)
 
-        # 3. Gather Calendar Overlaps
-        # 4. Return the JSON package
-        # FETCH OVERLAPPING CALENDAR EVENTS FOR THIS VISUAL WINDOW
-        # If an event starts before the window ends, and ends after the window starts, it overlaps.
+        # Extract chronological overlaps in business calendar metrics
         overlapping_events = EventSession.objects.filter(start_ts__lt=end, end_ts__gt=start).order_by('start_ts')
         events_payload = [{
             "id": evt.session_id,
@@ -93,13 +113,14 @@ class PingDataView(APIView):
             "devices": evt.expected_devices
         } for evt in overlapping_events]
 
+        # Deliver clean universal payload package structure
         return Response({
             "times": [t.isoformat() for t in agg_times],
-            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [], # Mean RTT
-            "jitters": agg_features[:, 1].tolist() if len(agg_features) > 0 else [],  # Jitter Standard Deviation
+            "features": agg_features[:, 0].tolist() if len(agg_features) > 0 else [],
+            "jitters": agg_features[:, 1].tolist() if len(agg_features) > 0 else [],
             "loss_rates": agg_features[:, 2].tolist() if len(agg_features) > 0 else [],
-            "forecast": forecast_data,  # Direct alignment vector mapping
-            "events": events_payload # Forwarded payload for the concurrent timeline track
+            "forecast": forecast_data,
+            "events": events_payload
         })
 
 def run_database_maintenance():
@@ -149,8 +170,12 @@ class DatabaseMaintenanceView(APIView):
                 "message": f"Failed to initialize background task: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# This uses Ollama to translate natural language into structured parameters or direct queries, handles both English and Japanese safely and queries the database using high-performance Django ORM filters.
 class TrafficAgentView(APIView):
+    """
+    Advanced Text-to-SQL NetOps Ingestion Agent view.
+    Translates loose natural language text into targeted database queries.
+    Enforces strict read-only parameters and audits AI performance metrics.
+    """
 
     def query_database(self, sql_string):
         """Executes read-only SQL queries securely with structural safety blocks."""
@@ -180,14 +205,22 @@ class TrafficAgentView(APIView):
             
             with connection.cursor() as cursor:
                 cursor.execute(clean_sql)
+                if not cursor.description:
+                    return json.dumps([])
                 columns = [col.name for col in cursor.description]
-                rows = cursor.fetchmany(5) # We only ever need the top row for these metrics
+                rows = cursor.fetchmany(5) # Restrict evaluation blocks to safe performance ceilings
                 return json.dumps([dict(zip(columns, row)) for row in rows], default=str)
         except Exception as e:
             return f"Database Error: {str(e)}"
         
     def post(self, request):
         user_question = request.data.get("question", "").strip()
+
+        # NOTE / FUTURE TASK:
+        # Dynamic target assignment (target_id selection via frontend picker or LookML orchestration)
+        # is scheduled for Phase 2 deployment. Tracking defaults strictly to Core Node ID: 1.
+        target_id = 1
+
         if not user_question:
             return Response({"error": "No question provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -206,13 +239,13 @@ class TrafficAgentView(APIView):
         TEMPORAL ROUTING RULES:
         - If the question asks about a specific day or date (e.g., 'June 19'), you MUST query FROM 'minute_rollups'.
         - To return a single peak or highest metric value with its time, you MUST select BOTH the target metric and the 'ts_minute' column, and you MUST always append 'ORDER BY [metric_column] DESC LIMIT 1' to ensure only ONE row returns.
-        - ALWAYS include 'target_id = 1' in the WHERE clause constraints.
+        - You MUST always enforce the filter 'target_id = {target_id}' in your WHERE clause statements. Do NOT use any other target ID number.
 
         CRITICAL COLUMN DEFINITIONS:
         - 'mean_rtt' stores the 1-minute AVERAGE baseline latency value. Use this when the user asks for "highest mean RTT", "highest average", or "worst average baseline".
         - 'highest_rtt' stores the absolute worst 1-second INSTANTaneous latency spike that happened within that minute. Use this when the user asks for "highest RTT", "instant peak", "momentary surge", or "worst single second".
 
-        FEW-SHOT TRANSLATION SAMPLES (CRITICAL TEMPLATES TO MATCH):
+        FEW-SHOT TRANSLATION SAMPLES (INJECTED TARGET_ID={target_id}):
         
         User: "What was the highest RTT on June 19?"
         Target: Fetch HIGHEST instantaneous spike value and its time.
@@ -244,16 +277,21 @@ class TrafficAgentView(APIView):
         {"error": "I don't know."}
         """
 
+        # Start tracking total response processing time for performance audits
+        start_time = time.time()
+        sql_query = "N/A"
+        db_result = "N/A"
+
         try:
-            # 1. Get raw query instructions from Ollama
+            # Fetch raw query generation directives from local LLM node
             intent_res = ollama.generate(
-                model='qwen2.5:1.5b', #'llama3', # 'qwen2.5:1.5b', 
+                model='qwen2.5:1.5b',
                 system=system_prompt, 
                 prompt=user_question,
                 options={"temperature": 0.0}
                 )
             
-            # Clean possible markdown wrapping code blocks if generated by accident
+            # Sanitize accidental markdown wrappers out of structural JSON responses
             raw_response = intent_res['response'].strip()
             if raw_response.startswith("```json"):
                 raw_response = raw_response.lstrip("```json").rstrip("```")
@@ -265,17 +303,17 @@ class TrafficAgentView(APIView):
             if "error" in intent_data:
                 return Response({"answer": "I don't know. / 分かりません。"})
 
-            # 2. Extract the generated SQL string directly
+            # Extract and sanitize the generated SQL string directly
             sql_query = intent_data.get("sql")
             if not sql_query:
                 return Response({"answer": "I don't know. / 分かりません。"})
             
             print(f"[Generated AI SQL Query]: {sql_query}")
 
-            # 3. Query your indexed PostgreSQL tables instantly via protected cursor method
+            # Query the indexed PostgreSQL tables instantly via protected cursor method
             db_result = self.query_database(sql_query)
             
-            # 4. Feed the raw table results back to Ollama to write a natural message response
+            # Feed results back to model to write a natural operational overview message
             print("[AI Agent] Requesting natural linguistic dashboard summary...")
             synthesis_prompt = f"User Question: {user_question}\nDatabase Output Matrix: {db_result}"
             
@@ -296,6 +334,18 @@ class TrafficAgentView(APIView):
             )
             
             final_text = final_res['message']['content'].strip()
+
+            # Collects timestamps, prompts, SQL execution paths, and metrics to continuous model profiling tables
+            execution_latency = time.time() - start_time
+            try:
+                with connection.cursor() as audit_cursor:
+                    audit_cursor.execute("""
+                        INSERT INTO ai_agent_logs (ts, user_prompt, generated_sql, db_output, final_response, latency_seconds)
+                        VALUES (NOW(), %s, %s, %s, %s, %s);
+                    """, (user_question, sql_query, db_result, final_text, execution_latency))
+            except Exception as log_err:
+                print(f"[AUDIT LOG WARNING] Could not save agent metrics to table: {str(log_err)}")
+            
             return Response({"answer": final_text})
 
         except Exception as e:

@@ -2,11 +2,15 @@
 .env
 .env.local
 .vscode/
-hint.txt
+*.txt
+*.json
 
 # --- Logs & Temp Data ---
-logs/
+logs/*
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # --- Python / Django ---
 __pycache__/
@@ -20,18 +24,11 @@ db.sqlite3
 
 # --- Node / React ---
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+network-ui/node_modules/
+network-ui/dist/
 build/
 dist/
 
 # --- OS Specific ---
 .DS_Store
 Thumbs.db
-
-# --- Large/Legacy Data & Work Instructions ---
-1_data/
-# 7_work_instruction/
-old/
-test_log_collector

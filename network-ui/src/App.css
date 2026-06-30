@@ -183,8 +183,6 @@
   }
 }
 
-/* --- Add these styles for the Calendar Modals at the bottom of your file --- */
-
 .auth-overlay {
   position: fixed; 
   top: 50%; 
@@ -196,7 +194,7 @@
   z-index: 1000;
   box-shadow: 0 0 10px rgba(0,0,0,0.5); 
   text-align: center;
-  color: #333; /* Ensures text is visible if you are on a dark theme */
+  color: #333;
 }
 
 .modal-backdrop {
