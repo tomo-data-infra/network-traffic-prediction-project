@@ -89,7 +89,7 @@ function App() {
           rawTime: binTime, 
           
           // Hide actual metrics completely if the time slot has not come yet
-          rtt: isFuture ? null : rtt,
+          rtt: isFuture ? null : parseFloat(Number(rtt).toFixed(2)),
           jitterHigh: isFuture ? null : parseFloat(Number(rtt + jitter).toFixed(2)),
           jitterLow: isFuture ? null : parseFloat(Number(Math.max(0, rtt - jitter)).toFixed(2)), 
           loss: isFuture ? null : (data.loss_rates ? data.loss_rates[i] : 0),

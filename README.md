@@ -15,7 +15,7 @@ The project is intentionally engineered across decoupled layers to minimize reso
      ┌─────────────────┴──────────────────┐
      ▼                                    ▼
 ┌────────────────────────┐       ┌────────────────────────┐
-│  React / Vite UI       │       │  Ollama Agent Pipeline  │
+│  React / Vite UI       │       │ Ollama Agent Pipeline  │
 │  (Frontend Viewport)   │       │  (Qwen2.5:1.5b Core)   │
 └────────────┬───────────┘       └────────────┬───────────┘
              │                                │
@@ -48,7 +48,7 @@ The project is intentionally engineered across decoupled layers to minimize reso
 
 ---
 
-## ⚡ Key Engineering Highlights
+## Key Engineering Highlights
 
 ### 1. High-Performance NumPy Array Masking
 To prevent the notorious **N+1 query database timeout vulnerability**, historical model retraining utilizes optimized in-memory array manipulation blocks. Instead of querying the database inside loops, raw metrics are extracted via **exactly one single bulk lookup**, wrapped in high-speed NumPy matrices, and processed utilizing vectorized chronological boolean masks.
@@ -56,7 +56,11 @@ To prevent the notorious **N+1 query database timeout vulnerability**, historica
 
 ### 2. Strict RFC 3550 Network Jitter Calculations
 Unlike generic data tools that measure standard deviation against a global mean, this engine calculates network jitter strictly compliant with the internet standard **RFC 3550 protocols**:
-\[\text{Jitter} = \frac{1}{N}\sum_{i=1}^{N}\vert{}RTT_{i} - RTT_{i-1}\vert{}\]
+
+$$
+\text{Jitter} = \frac{1}{N}\sum_{i=1}^{N}\vert{}RTT_{i} - RTT_{i-1}\vert{}
+$$
+
 This accurately captures consecutive packet latency variation over time, delivering production-grade accuracy to technical reviewers.
 
 ### 3. Defensive Security Window & Memory Constraints
@@ -66,6 +70,50 @@ To isolate the system from memory overloading, the backend API applies strict ru
 
 ### 4. Zero-Leak Environment Profile Boundaries
 Database connection structures and application keys are isolated from the codebase using system profiles (`.env`). Standalone automated scripts fetch keys directly, enforcing a **Fail-Fast architecture** that shuts down cleanly with explicit warnings if configurations fail to resolve, keeping your private IP schemas completely safe from code repository leaks.
+
+### 5. Telemetry Aggregation & Real-Time Jitter Corridor
+
+When monitoring live traffic, hovering the cursor over the **Latency Profile** chart displays a statistical real-time volatility envelope. This corridor maps out the immediate micro-variations in packet latency, proving that the application actively measures true network stability rather than just drawing flattened averages.
+
+#### Real-Time UI Telemetry Output
+![Real-Time Tooltip Telemetry](docs/telemetry-tooltip-hover.png)
+
+`Actual Mean RTT: 6.73 ms (Jitter Upper Boundary: 10.64 ms, Jitter Lower Boundary: 2.82 ms)`
+
+---
+
+#### Mathematical Pipeline Example (1-Minute Bin Execution)
+
+To understand how the data stream resolves into these visual boundaries, consider an active 1-minute window capturing **9 consecutive sequential round-trip tracking packets (RTT)**:
+
+$$\text{Raw Telemetry Stream (ms)} = [6, 5, 4, 5, 6, 12, 25, 30, 12]$$
+
+##### Step A: Mean RTT Calculation
+The backend maps the baseline latency by deriving the arithmetic mean of all non-timeout packets:
+
+$$
+\text{Actual Mean RTT} = \frac{6 + 5 + 4 + 5 + 6 + 12 + 25 + 30 + 12}{9} = \frac{105}{9} \approx \mathbf{11.67\text{ ms}}
+$$
+
+##### Step B: RFC 3550 Compliant Network Jitter Generation
+Network jitter is calculated as the average absolute difference between **consecutive** successful packets. This isolates momentary structural routing variances over time:
+
+$$
+\text{Consecutive Deltas } (\Delta RTT) = [|5-6|, |4-5|, |5-4|, |6-5|, |12-6|, |25-12|, |30-25|, |12-30|]
+$$
+
+$$
+\Delta RTT = [1, 1, 1, 1, 6, 13, 5, 18]
+$$
+
+$$
+\text{Actual Jitter} = \frac{1 + 1 + 1 + 1 + 6 + 13 + 5 + 18}{8} = \frac{46}{8} = \mathbf{5.75\text{ ms}}
+$$
+
+#### Step C: Rendering the UI Volatility Corridor Bounds
+The React client (`App.jsx`) receives the `mean_rtt` ($11.67\text{ms}$) and `jitter` ($5.75\text{ms}$) layers and renders the envelope on the fly:
+* **Jitter Upper Boundary** $= \text{Mean RTT} + \text{Jitter} = 11.67 + 5.75 = \mathbf{17.42\text{ ms}}$
+* **Jitter Lower Boundary** $= \max(0, \text{Mean RTT} - \text{Jitter}) = 11.67 - 5.75 = \mathbf{5.92\text{ ms}}$
 
 ---
 
