@@ -324,7 +324,7 @@ function App() {
     setIsAgentTyping(true);
 
     try {
-      const res = await fetch(`${DJANGO_URL}/traffic_agent/`, {
+      const res = await fetch(`${DJANGO_URL}/netops_agent_core/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: userMessage }),

@@ -6,7 +6,7 @@ Maps public REST API routes to core viewsets, custom ML endpoints, and backgroun
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from calendar_api.views import EventSessionViewSet, PingLogViewSet, TargetViewSet, TrainModelView, PingDataView, DatabaseMaintenanceView, TrafficAgentView
+from calendar_api.views import EventSessionViewSet, PingLogViewSet, TargetViewSet, TrainModelView, PingDataView, DatabaseMaintenanceView, NetOpsAgentCoreView
 
 # Initialize Rest Framework Router for automated CRUD endpoints
 router = DefaultRouter()
@@ -25,8 +25,8 @@ urlpatterns = [
         # Custom ML Analytics Data Feed Endpoint (http://localhost:8000/api/ping_data/)
         path('ping_data/', PingDataView.as_view(), name='ping_data'),
 
-        # Ingestion Text-to-SQL AI Agent Interface Gateway (http://localhost:8000/api/traffic_agent/)
-        path('traffic_agent/', TrafficAgentView.as_view(), name='traffic_agent'),
+        # Ingestion Text-to-SQL AI Agent Interface Gateway (http://localhost:8000/api/netops_agent_core/)
+        path('netops_agent_core/', NetOpsAgentCoreView.as_view(), name='netops_agent_core'),
 
         # Baseline Machine Learning Model Retraining Trigger (http://localhost:8000/api/train_model/)
         path('train_model/', TrainModelView.as_view(), name='train_model'),

@@ -1,0 +1,25 @@
+services:
+  cube_core:
+    image: cubejs/cube:v0.35
+    # ports:
+      # - "4000:4000"
+    network_mode: "host"
+    env_file:
+      - ../.env 
+    environment:
+      - CUBEJS_DB_TYPE=postgres
+      - CUBEJS_DB_HOST=${CUBEJS_DB_HOST}
+      - CUBEJS_DB_PORT=${DB_PORT}
+      - CUBEJS_DB_NAME=${DB_NAME}
+      - CUBEJS_DB_USER=${DB_USER}
+      - CUBEJS_DB_PASS=${DB_PASSWORD}
+      - CUBEJS_DEV_MODE=false
+      #- CUBEJS_DEV_MODE=true
+      - CUBEJS_API_SECRET=${CUBE_API_SECRET}
+      - CUBEJS_CACHE_AND_QUEUE_DRIVER=memory
+      - CUBEJS_QUEUE_DRIVER=memory
+      - CUBEJS_CUBESTORE_HOST=${CUBEJS_CUBESTORE_HOST} #127.0.0.1
+      - CUBEJS_CUBESTORE_PORT=${CUBEJS_CUBESTORE_PORT}
+    volumes:
+      - ./schema:/cube/conf/model
+

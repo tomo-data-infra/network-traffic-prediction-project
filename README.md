@@ -9,15 +9,15 @@ A decoupled, high-frequency network performance monitoring infrastructure and an
 The project is intentionally engineered across decoupled layers to minimize resource contention, maximize system resilience, and isolate the real-time processing threads from the web presentation application layers.
 
 ```text
-       [ Enterprise Client / User Browser ]
-                       │
-         HTTP API      │      Natural Language Chat
-     ┌─────────────────┴──────────────────┐
-     ▼                                    ▼
-┌────────────────────────┐       ┌────────────────────────┐
-│  React / Vite UI       │       │ Ollama Agent Pipeline  │
-│  (Frontend Viewport)   │       │  (Qwen2.5:1.5b Core)   │
-└────────────┬───────────┘       └────────────┬───────────┘
+            [ Enterprise Client / User Browser ]
+                             │
+          HTTP API           │      Natural Language Chat
+             ┌───────────────┴────────────────┐
+             ▼                                ▼
+┌─────────────────────────┐      ┌─────────────────────────┐
+│     React / Vite UI     │      │  Ollama Agent Pipeline  │
+│   (Frontend Viewport)   │      │   (Qwen2.5:1.5b Core)   │
+└────────────┬────────────┘      └────────────┬────────────┘
              │                                │
              ▼                                ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -138,20 +138,20 @@ Summary Output                                     (Access Denied if mutated)
 ## Project Structure & Directory Mapping
 
 ```text
-├── network-ui/             # Frontend Client Workspace (React, Vite, Tailwind)
-├── calendar_api/           # Core API App Layer
+├── network-ui/               # Frontend Client Workspace (React, Vite, Tailwind)
+├── calendar_api/             # Core API App Layer
 │   ├── utils/
-│   │   ├── features.py     # Aggregation, Data Imputation, & Cyclic Math
-│   │   └── predictor.py    # Predictive Baseline Analytics & RFC 3550 Jitter
-│   ├── models.py           # Database Mappings & Audit Schema Records
-│   └── views.py            # Guarded Web Views & AI Agent Pipeline Controls
-├── config/                 # Global Project Settings (Django ASGI/WSGI Core)
-├── scripts/                # Isolated Telemetry Workers
+│   │   ├── features.py       # Aggregation, Data Imputation, & Cyclic Math
+│   │   └── predictor.py      # Predictive Baseline Analytics & RFC 3550 Jitter
+│   ├── models.py             # Database Mappings & Audit Schema Records
+│   └── views.py              # Guarded Web Views & AI Agent Pipeline Controls
+├── config/                   # Global Project Settings (Django ASGI/WSGI Core)
+├── scripts/                  # Isolated Telemetry Workers
 │   └── ingest_ping_stream.py # Lightweight Independent Ingestion Engine
-├── .env.example            # Deployment Configuration Profile Template
-├── .gitignore              # Unified Repository Exclusion Rules Map
-├── start_app.sh            # Production Interface Launcher (Web + API)
-└── start_ping_collecting.sh # Isolated Network Telemetry Stream Launcher
+├── .env.example              # Deployment Configuration Profile Template
+├── .gitignore                # Unified Repository Exclusion Rules Map
+├── start_app.sh              # Production Interface Launcher (Web + API)
+└── start_ping_collecting.sh  # Isolated Network Telemetry Stream Launcher
 ```
 
 ---

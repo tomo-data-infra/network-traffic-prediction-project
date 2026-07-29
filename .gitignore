@@ -1,6 +1,11 @@
 # --- Secrets & Config ---
 .env
 .env.local
+.env.development
+.env.test
+.env.production
+.aiexclude
+.claudeignore
 .vscode/
 *.txt
 *.json
