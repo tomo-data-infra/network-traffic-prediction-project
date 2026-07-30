@@ -5,6 +5,7 @@ import jwt
 import numpy as np
 import threading
 import requests
+import logging
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,8 +18,20 @@ from .models import EventSession, PingLog, Target
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
 from .utils import features, predictor, anonymizer, llm_router
 from datetime import datetime, timedelta, timezone
+import psutil
 
 JST = timezone(timedelta(hours=9))
+
+logger = logging.getLogger("netops_agent")
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s %(message)s"))
+    logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+if psutil is not None:
+    rss_mb = psutil.Process().memory_info().rss / (1024 * 1024)
+    logger.info("Process memory | rss_mb=%.1f", rss_mb)
 
 class EventSessionViewSet(viewsets.ModelViewSet):
     """
@@ -186,6 +199,7 @@ class NetOpsAgentCoreView(APIView):
             # dynamic target tracking baseline configuration
             target_id = 1
             start_time = time.time()
+
             user_question = request.data.get("question", "").strip()
 
             if not user_question:
@@ -230,15 +244,27 @@ class NetOpsAgentCoreView(APIView):
             Assume current year is 2026 if omitted. Return raw JSON block object only.
             """
 
-            # Retrieve Structured JSON execution map from the Cascading LLM Hierarchy
+            llm_start = time.perf_counter()
             cube_query_raw = llm_router.cascade_llm_router(system_prompt, safe_masked_question)
+            llm_elapsed_ms = (time.perf_counter() - llm_start) * 1000
+
+            try:
+                logger.info(
+                    "LLM payload | elapsed_ms=%.1f | status=%s", llm_elapsed_ms,
+                    json.dumps(cube_query_raw, ensure_ascii=False, indent=2)[:1000]
+                )
+            except TypeError:
+                logger.info("LLM payload | elapsed_ms=%.1f | status=%s", llm_elapsed_ms, str(cube_query_raw)[:1000])
+
+            """
             print("--- PAYLOAD RECEIVED FROM LLM ---")
             print(json.dumps(cube_query_raw, indent=2))
             print("---------------------------------")
             # print(f"Structure of cube_query_raw: {cube_query_raw}")
+            """
 
             if isinstance(cube_query_raw, dict) and "error" in cube_query_raw:
-                return Response({"answer": "I don't know. / 分かりません。"}, status=status.HTTP_200_OK)
+                return Response({"answer": "I don't know."}, status=status.HTTP_200_OK)
             
             if isinstance(cube_query_raw, str):
                 try:
@@ -273,6 +299,9 @@ class NetOpsAgentCoreView(APIView):
 
             print(f"Targeting active database core path: {cube_api_endpoint}")
 
+            logger.info("Cube request start | url=%s | payload_keys=%s", cube_api_endpoint, list(final_cube_payload.keys()))
+
+            cube_start = time.perf_counter()
             try:
                 cube_res = requests.post(
                     cube_api_endpoint,
@@ -280,9 +309,41 @@ class NetOpsAgentCoreView(APIView):
                     headers={"Authorization": auth_token, "Content-Type": "application/json"},
                     timeout=15.0
                 )
+                cube_elapsed_ms = (time.perf_counter() - cube_start) * 1000
+                logger.info("Cube request done | elapsed_ms=%.1f | status=%s", cube_elapsed_ms, cube_res.status_code)
+
+                body = cube_res.json()
+                data = body.get("data", [])
+
+                if cube_res.status_code != 200:
+                    logger.error("Cube HTTP error | status=%s | body=%s", cube_res.status_code, body)
+                elif body.get("error"):
+                    logger.warning("Cube application error | %s", body.get("error"))
+                elif not data:
+                    logger.warning("Cube returned no data")
+                else:
+                    logger.info("Cube success | rows=%d | slowQuery=%s", len(data), body.get("slowQuery", False))
+
+            except requests.RequestException as e:
+                logger.exception("Cube request failed")
+            except ValueError as e:
+                logger.error("Cube returned invalid JSON | %s", e)
+
+            """
+            try:
+                cube_res = requests.post(
+                    cube_api_endpoint,
+                    json={"query": final_cube_payload},
+                    headers={"Authorization": auth_token, "Content-Type": "application/json"},
+                    timeout=15.0
+                )
+                logger.info("Cube response | status=%s | body=%s", cube_res.status_code, cube_res.text[:500])
+                body = cube_res.json()
+                logger.error("Cube returned error body | %s", body)
             except Exception as e:
-                print(f"Network dispatch error to Cube: {e}")
+                logger.error("Network dispatch error to Cube: %s", e)
                 cube_res = None
+            """
             
             """
             if cube_res is None or cube_res.status_code != 200:
@@ -347,18 +408,22 @@ class NetOpsAgentCoreView(APIView):
                     # "num_predict": 150
                 }
             }
-            
+
+            ollama_start = time.perf_counter()
             try:
                 synthesis_res = requests.post(ollama_endpoint, json=payload, timeout=60.0)
+                ollama_elapsed_ms = (time.perf_counter() - ollama_start) * 1000
                 if synthesis_res.status_code == 200:
                     final_text = synthesis_res.json().get('response', '').strip()
                 else:
                     final_text = f"Data retrieved successfully, but local synthesis node returned status {synthesis_res.status_code}."
+                logger.info("Ollama synthesis done | elapsed_ms=%.1f | status=%s", ollama_elapsed_ms, synthesis_res.status_code)
             except Exception as ollama_err:
                 # Safe fallback so your API never returns a 500 error if Ollama is slow
                 final_text = f"Data retrieved successfully. (Local synthesis layer offline: {str(ollama_err)})"
-
+            
             execution_time = time.time() - start_time
+            logger.info("Request completed | total_elapsed_s=%.3f | rss_mb=%.1f", execution_time, rss_mb)
     
             # Log metrics to your `ai_agent_logs` table here before return...
             return Response({
