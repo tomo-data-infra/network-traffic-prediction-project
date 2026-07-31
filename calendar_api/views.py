@@ -1,6 +1,5 @@
 import json
 import time
-import ollama
 import jwt
 import numpy as np
 import threading
@@ -29,10 +28,6 @@ if not logger.handlers:
     logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-if psutil is not None:
-    rss_mb = psutil.Process().memory_info().rss / (1024 * 1024)
-    logger.info("Process memory | rss_mb=%.1f", rss_mb)
-
 class EventSessionViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows event_sessions to be viewed or edited.
@@ -45,8 +40,11 @@ class PingLogViewSet(viewsets.ModelViewSet):
     This is for the raw data view. 
     We limit it to the latest 100 rows so it loads INSTANTLY.
     """
-    queryset = PingLog.objects.all().order_by('-ts')[:100] 
+    queryset = PingLog.objects.all()
     serializer_class = PingLogSerializer
+
+    def get_queryset(self):
+        return PingLog.objects.all().order_by('-ts')[:100] 
 
 class TargetViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
@@ -59,7 +57,7 @@ class TrainModelView(APIView):
             profiles = predictor.train_baseline_profiles(days_back=30)
             return Response({"status": "Model successfully retrained", "profiles": profiles})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PingDataView(APIView):
     """
@@ -96,7 +94,7 @@ class PingDataView(APIView):
         window_duration = end - start
         if window_duration > timedelta(hours=12):
             return Response(
-                {"error": "Resource safety constraint: Maximum query limit exceeded. Time windows must not span more than 7 days."},
+                {"error": "Resource safety constraint: Maximum query limit exceeded. Time windows must not span more than 12 hours."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -145,28 +143,29 @@ def run_database_maintenance():
     Updates Materialized Views on an isolated background thread.
     Never deletes or alters raw historical data rows.
     """
-    now = timezone.now()
-    print(f"[Background DB Task] Maintenance initialized at {now.strftime('%Y-%m-%d %H:%M:%S')} JST")
+    now = django_tz.now()
+    logger.info(
+        "[Background DB Task] Maintenance initialized at %s JST",
+        now.astimezone(JST).strftime("%Y-%m-%d %H:%M:%S")
+    )
 
     try:
         with connection.cursor() as cursor:
-            print("[Background DB Task] Refreshing Minute Rollups...")
+            logger.info("[Background DB Task] Refreshing minute_rollups...")
             cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY minute_rollups;")
-            
-            print("[Background DB Task] Refreshing Hourly Rollups...")
-            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY hourly_rollups;")
-            
-            print("[Background DB Task] Refreshing Daily Rollups...")
-            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY daily_rollups;")
-            
-            print("[Background DB Task] Optimizing database index lookup paths...")
-            cursor.execute("ANALYZE ping_logs;")
-            
-        print("[Background DB Task] Database optimization cycle completed successfully. Zero data loss.")
-        
-    except Exception as e:
-        print(f"[Background DB Task Error] Materialized View refresh failure: {str(e)}")
 
+            logger.info("[Background DB Task] Refreshing hourly_rollups...")
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY hourly_rollups;")
+
+            logger.info("[Background DB Task] Refreshing daily_rollups...")
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY daily_rollups;")
+
+            logger.info("[Background DB Task] Analyzing ping_logs for planner statistics...")
+            cursor.execute("ANALYZE ping_logs;")
+
+        logger.info("[Background DB Task] Database optimization cycle completed successfully.")
+    except Exception:
+        logger.exception("[Background DB Task] Materialized view refresh failure")
 
 class DatabaseMaintenanceView(APIView):
     """API endpoint to trigger view updates from the frontend dashboard."""
@@ -256,13 +255,6 @@ class NetOpsAgentCoreView(APIView):
             except TypeError:
                 logger.info("LLM payload | elapsed_ms=%.1f | status=%s", llm_elapsed_ms, str(cube_query_raw)[:1000])
 
-            """
-            print("--- PAYLOAD RECEIVED FROM LLM ---")
-            print(json.dumps(cube_query_raw, indent=2))
-            print("---------------------------------")
-            # print(f"Structure of cube_query_raw: {cube_query_raw}")
-            """
-
             if isinstance(cube_query_raw, dict) and "error" in cube_query_raw:
                 return Response({"answer": "I don't know."}, status=status.HTTP_200_OK)
             
@@ -297,9 +289,13 @@ class NetOpsAgentCoreView(APIView):
             if not cube_api_endpoint.endswith('/cubejs-api/v1/load'):
                 cube_api_endpoint = cube_api_endpoint.rstrip('/') + '/cubejs-api/v1/load'
 
-            print(f"Targeting active database core path: {cube_api_endpoint}")
-
+            logger.info("Targeting active database core path: %s", cube_api_endpoint)
             logger.info("Cube request start | url=%s | payload_keys=%s", cube_api_endpoint, list(final_cube_payload.keys()))
+
+            cube_res = None
+            body = {}
+            data = []
+            analytics_data = []
 
             cube_start = time.perf_counter()
             try:
@@ -314,85 +310,27 @@ class NetOpsAgentCoreView(APIView):
 
                 body = cube_res.json()
                 data = body.get("data", [])
-
-                if cube_res.status_code != 200:
-                    logger.error("Cube HTTP error | status=%s | body=%s", cube_res.status_code, body)
-                elif body.get("error"):
-                    logger.warning("Cube application error | %s", body.get("error"))
-                elif not data:
-                    logger.warning("Cube returned no data")
-                else:
-                    logger.info("Cube success | rows=%d | slowQuery=%s", len(data), body.get("slowQuery", False))
-
-            except requests.RequestException as e:
+                analytics_data = data
+            except requests.RequestException:
                 logger.exception("Cube request failed")
             except ValueError as e:
                 logger.error("Cube returned invalid JSON | %s", e)
 
-            """
-            try:
-                cube_res = requests.post(
-                    cube_api_endpoint,
-                    json={"query": final_cube_payload},
-                    headers={"Authorization": auth_token, "Content-Type": "application/json"},
-                    timeout=15.0
-                )
-                logger.info("Cube response | status=%s | body=%s", cube_res.status_code, cube_res.text[:500])
-                body = cube_res.json()
-                logger.error("Cube returned error body | %s", body)
-            except Exception as e:
-                logger.error("Network dispatch error to Cube: %s", e)
-                cube_res = None
-            """
-            
-            """
-            if cube_res is None or cube_res.status_code != 200:
-                print("\n[CUBE.JS SEMANTIC ENGINE REJECTION DETAIL]:")
-                print(f"Status Code: {cube_res.status_code}")
-                print(f"Error Message Context: {cube_res.text}\n")
-                return Response({"error": f"Semantic layer execution failure: {cube_res.text}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            """
-            
-            if cube_res is None or cube_res.status_code != 200:
+            if cube_res is None or getattr(cube_res, "status_code", None) != 200:
                 err_msg = cube_res.text if cube_res else "Connection Timeout / Unreachable"
-                print(f"[CUBE.JS SEMANTIC ENGINE REJECTION DETAIL]: {err_msg}")
-                
-                # FALLBACK GATE: If Cube fails, clear execution and explicitly drop to Tier 3 loop
-                # instead of throwing a generic 500 error page to the frontend UI
+                logger.warning("Cube fallback triggered | %s", err_msg)
                 cube_query_raw = llm_router.query_tier3_local_ollama(system_prompt, safe_masked_question)
                 return Response({"answer": cube_query_raw}, status=status.HTTP_200_OK)
-            
 
-            """
-            # Your Safe Gateway Catch Logic Block
-            if cube_res is None or cube_res.status_code != 200:
-                err_msg = cube_res.text if cube_res else "Connection Timeout / Unreachable"
-                print(f"[CUBE.JS SEMANTIC ENGINE REJECTION DETAIL]: {err_msg}")
-                
-                # If Cube is unreachable, capture the raw response payload text generated by Tier 2
-                raw_payload_dict = cube_query_raw 
-                
-                # FIX: Run it through the anonymizer dictionary lookup to restore your database IPs instantly
-                try:
-                    final_unmasked_fallback = anonymizer.resolve_tokens_to_db_filters(raw_payload_dict)
-                except Exception:
-                    final_unmasked_fallback = raw_payload_dict
-                
-                return Response({"answer": final_unmasked_fallback}, status=status.HTTP_200_OK)
-            """
-            analytics_data = cube_res.json().get("data", [])
+            if body.get("error"):
+                logger.warning("Cube application error | %s", body.get("error"))
+            elif not data:
+                logger.warning("Cube returned no data | body=%s", body)
+            else:
+                logger.info("Cube success | rows=%d | slowQuery=%s", len(data), body.get("slowQuery", False))
 
             # Synthesize data results back into natural language for user display
             synthesis_prompt = f"Synthesize this database data context into a concise message answer responding to: '{user_question}'. Data: {json.dumps(analytics_data)}"
-            
-            """          
-            # Using Tier 3 local Qwen framework for safe synthesis fallback
-            from ollama import generate as ollama_generate
-            final_text_res = ollama_generate(
-                model='qwen2.5:1.5b',
-                prompt=synthesis_prompt
-            )
-            """
 
             # Use the existing settings URL to talk directly to Ollama's native endpoint
             ollama_endpoint = settings.OLLAMA_API_URL
@@ -405,7 +343,6 @@ class NetOpsAgentCoreView(APIView):
                 "stream": False,
                 "options": {
                     "temperature": 0.3,
-                    # "num_predict": 150
                 }
             }
 
@@ -423,6 +360,7 @@ class NetOpsAgentCoreView(APIView):
                 final_text = f"Data retrieved successfully. (Local synthesis layer offline: {str(ollama_err)})"
             
             execution_time = time.time() - start_time
+            rss_mb = psutil.Process().memory_info().rss / (1024 * 1024)
             logger.info("Request completed | total_elapsed_s=%.3f | rss_mb=%.1f", execution_time, rss_mb)
     
             # Log metrics to your `ai_agent_logs` table here before return...
@@ -433,8 +371,5 @@ class NetOpsAgentCoreView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            import traceback
-            print("\n[CRITICAL BACKEND CRASH LOG] Detailed Traceback Info:")
-            traceback.print_exc()
-            print("-----------------------------------------------------\n")
+            logger.exception("Critical backend crash")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

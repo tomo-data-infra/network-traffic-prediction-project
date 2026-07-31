@@ -1,5 +1,4 @@
-# Network Telemetry Analysis & Predictive AI Agent Dashboard
-
+# Data Analytics Platform & AI Query Agent Dashboard
 A decoupled, high-frequency network performance monitoring infrastructure and analytical forecasting system. This application continuously ingests low-level ICMP stream telemetries into a PostgreSQL core, applies a statistical forecasting model aligned with enterprise business calendar schedules, and exposes an intelligent, natural-language Text-to-SQL NetOps data agent.
 
 ---
@@ -50,11 +49,43 @@ The project is intentionally engineered across decoupled layers to minimize reso
 
 ## Key Engineering Highlights
 
-### 1. High-Performance NumPy Array Masking
+### 1. Data and Semantic Architecture
+Raw table: ping_logs(ts, target_id, rtt_ms, is_timeout)
+Rollup views:
+  - minute_rollups(ts_minute, target_id, highest_rtt, mean_rtt, ...)
+  - hourly_rollups(ts_hour, target_id, highest_rtt, mean_rtt, ...)
+  - daily_rollups(ts_day, target_id, highest_rtt, mean_rtt, ...)
+
+**Why this matters**
+- Pre-aggregation reduces query load and keeps interactive response times low.
+- Supports both raw event-level analysis and business-level summaries.
+- This separation makes the platform more scalable and easier to debug.
+
+### Semantic layer
+
+- The platform maps business terms like “high latency” and “packet loss” to technical metrics.
+- Example mapping:
+  - `high latency` → `PingLogs.highestRtt`
+  - `packet loss` → `PingLogs.packetLossRate`
+
+- `semantic_catalog.py` is a planned module for this mapping.
+  - It is intended to define business-friendly labels, technical field names, and preferred rollup sources.
+  - This gives the platform a more explicit semantic contract than hardcoded prompt text alone.
+
+### User-facing flow
+
+1. User asks a question in natural language.
+2. The anonymizer masks sensitive identifiers.
+3. LLM translates the question into Cube JSON.
+4. API sends the query to Cube.js.
+5. Cube.js executes against the rollup views and returns analytics.
+6. The system synthesizes a readable answer.
+
+### 2. High-Performance NumPy Array Masking
 To prevent the notorious **N+1 query database timeout vulnerability**, historical model retraining utilizes optimized in-memory array manipulation blocks. Instead of querying the database inside loops, raw metrics are extracted via **exactly one single bulk lookup**, wrapped in high-speed NumPy matrices, and processed utilizing vectorized chronological boolean masks.
 * *Performance Profile:* Drops training cycles from minutes to **milliseconds**.
 
-### 2. Strict RFC 3550 Network Jitter Calculations
+### 3. Strict RFC 3550 Network Jitter Calculations
 Unlike generic data tools that measure standard deviation against a global mean, this engine calculates network jitter strictly compliant with the internet standard **RFC 3550 protocols**:
 
 $$
@@ -63,15 +94,15 @@ $$
 
 This accurately captures consecutive packet latency variation over time, delivering production-grade accuracy to technical reviewers.
 
-### 3. Defensive Security Window & Memory Constraints
+### 4. Defensive Security Window & Memory Constraints
 To isolate the system from memory overloading, the backend API applies strict runtime input verification layers:
 * **Chronological Guard**: Instantly rejects requests if the user sets `start_time >= end_time`.
 * **Resource Ceiling Protection**: Enforces an absolute 7-day restriction boundary on query horizons to guarantee safe memory footprint caps under load.
 
-### 4. Zero-Leak Environment Profile Boundaries
+### 5. Zero-Leak Environment Profile Boundaries
 Database connection structures and application keys are isolated from the codebase using system profiles (`.env`). Standalone automated scripts fetch keys directly, enforcing a **Fail-Fast architecture** that shuts down cleanly with explicit warnings if configurations fail to resolve, keeping your private IP schemas completely safe from code repository leaks.
 
-### 5. Telemetry Aggregation & Real-Time Jitter Corridor
+### 6. Telemetry Aggregation & Real-Time Jitter Corridor
 
 When monitoring live traffic, hovering the cursor over the **Latency Profile** chart displays a statistical real-time volatility envelope. This corridor maps out the immediate micro-variations in packet latency, proving that the application actively measures true network stability rather than just drawing flattened averages.
 
@@ -138,20 +169,27 @@ Summary Output                                     (Access Denied if mutated)
 ## Project Structure & Directory Mapping
 
 ```text
-├── network-ui/               # Frontend Client Workspace (React, Vite, Tailwind)
-├── calendar_api/             # Core API App Layer
+├── network-ui/                 # Frontend Client Workspace (React, Vite, Tailwind)
+├── calendar_api/               # Core API App Layer
 │   ├── utils/
-│   │   ├── features.py       # Aggregation, Data Imputation, & Cyclic Math
-│   │   └── predictor.py      # Predictive Baseline Analytics & RFC 3550 Jitter
-│   ├── models.py             # Database Mappings & Audit Schema Records
-│   └── views.py              # Guarded Web Views & AI Agent Pipeline Controls
-├── config/                   # Global Project Settings (Django ASGI/WSGI Core)
-├── scripts/                  # Isolated Telemetry Workers
-│   └── ingest_ping_stream.py # Lightweight Independent Ingestion Engine
-├── .env.example              # Deployment Configuration Profile Template
-├── .gitignore                # Unified Repository Exclusion Rules Map
-├── start_app.sh              # Production Interface Launcher (Web + API)
-└── start_ping_collecting.sh  # Isolated Network Telemetry Stream Launcher
+│   │   ├── llm_router.py       # LLM routing and fallback logic
+│   │   ├── semantic_catalog.py # Planned semantic metric catalog
+│   │   ├── features.py         # Aggregation, data imputation, cyclic math
+│   │   └── predictor.py        # Baseline analytics and RFC 3550 jitter
+│   ├── models.py               # Database mappings and audit schema
+│   ├── serializers.py          # REST serializers
+│   ├── urls.py                 # Django API routing
+│   ├── views.py                # Guarded web views and AI query pipeline
+│   └── apps.py                 # App initialization and optional tunnel setup
+├── config/                     # Global project settings (Django ASGI/WSGI)
+│   └── urls.py
+├── scripts/                    # Isolated telemetry workers
+│   └── ingest_ping_stream.py   # Lightweight independent ingestion engine
+├── .env.example                # Deployment configuration template
+├── .gitignore                  # Repository ignore rules
+├── requirements.txt            # Python dependencies
+├── start_app.sh                # Production interface launcher (Web + API)
+└── start_ping_collecting.sh    # Isolated telemetry stream launcher
 ```
 
 ---
