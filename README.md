@@ -1,5 +1,6 @@
-# Data Analytics Platform & AI Query Agent Dashboard
-A decoupled, high-frequency network performance monitoring infrastructure and analytical forecasting system. This application continuously ingests low-level ICMP stream telemetries into a PostgreSQL core, applies a statistical forecasting model aligned with enterprise business calendar schedules, and exposes an intelligent, natural-language Text-to-SQL NetOps data agent.
+# AI NetOps Query Agent & Network Telemetry Analytics Platform
+
+A natural-language query agent for network telemetry: ask plain-English (or Japanese) questions about live latency, jitter, and packet loss, and get an answer synthesized from a live Cube.js semantic layer — backed by a multi-tier LLM cascade with automatic fallback. The same platform continuously ingests low-level ICMP stream telemetry into PostgreSQL and layers a statistical forecasting model on top, aligned with a business calendar schedule.
 
 ---
 
@@ -21,6 +22,7 @@ The project is intentionally engineered across decoupled layers to minimize reso
              ▼                                ▼
 ┌─────────────────────────────────────────────────────────┐
 │              Django REST Framework Backend              │
+│    - AI Query Agent (LLM Cascade + Cube.js Dispatch)    │
 │       - Predictive Modeling (NumPy Memory Masking)      │
 │       - Security Guardrails & Input Validation          │
 └────────────────────────────┬────────────────────────────┘
@@ -41,128 +43,76 @@ The project is intentionally engineered across decoupled layers to minimize reso
 ```
 
 ### Core Components
-1. **Frontend UI (`network-ui/`)**: A single-page dashboard built with React and Vite. It renders real-time latency monitors, statistical uncertainty corridors, and business calendar schedules.
-2. **Web Backend API (`calendar_api/`, `config/`)**: A secure Django REST Framework service that handles predictive computing engines, inputs time-boundary protection checks, and serves analytics.
-3. **Telemetry Ingestion Worker (`scripts/`)**: An ultra-lightweight, high-frequency standalone Python worker engine that interacts directly with network sockets and streams metrics without loading the web framework overhead.
+1. **Web Backend API (`calendar_api/`, `config/`)**: A Django REST Framework service that hosts the multi-tier AI query agent, predictive computing engines, and time-boundary/input validation.
+2. **Frontend UI (`network-ui/`)**: A single-page dashboard built with React and Vite. It renders the NetOps chat agent, real-time latency monitors, statistical uncertainty corridors, and business calendar schedules.
+3. **Telemetry Ingestion Worker (`scripts/`)**: An ultra-lightweight, high-frequency standalone Python worker that interacts directly with network sockets and streams metrics without loading the web framework overhead.
 
 ---
 
-## Key Engineering Highlights
+## Text-to-Query NetOps AI Data Agent
 
-### 1. Data and Semantic Architecture
+The dashboard integrates a conversational AI assistant that translates natural language questions (English and Japanese) into a Cube.js semantic query, executes it against the rollup views, and synthesizes a plain-language answer.
+
+```text
+User Question ──► Anonymizer ──► LLM Cascade ──► Cube.js Query JSON
+              (IP masking)   (Gemini → Remote GPU → Local Ollama)
+                                                       │
+                                                       ▼
+Dashboard  ◄── Synthesis (Ollama qwen2.5:1.5b) ◄── Cube.js (read-only aggregate query)
+Answer                                                │
+                                                       ▼
+                                          ai_agent_logs (full audit trail)
+```
+
+* **Multi-tier LLM cascade with graceful degradation:** each request is attempted through `cascade_llm_router` in order — a cloud-hosted Gemini 2.5 Flash tier, a private remote-GPU Llama 3.1 tier (reached over an auto-managed SSH tunnel), and a local Ollama Qwen2.5:1.5B tier — falling through to the next tier on failure, timeout, or malformed JSON, so the agent keeps working even if a paid API key or the GPU box is unavailable.
+* **Anonymization before anything leaves the process:** IPv4 addresses in the user's question are masked into per-request tokens (`TARGET_NODE_1`, ...) before the question is sent to any LLM or written to a log line, and are only resolved back to real IPs when building the final Cube.js filter (`anonymizer.py`).
+* **Structurally read-only:** the LLM only ever produces a Cube.js query object (measures/dimensions/filters) — there is no raw-SQL generation path, so there's nothing to sanitize for mutation keywords in the first place.
+* **Dynamic data routing:** the agent targets the appropriate rollup view (`minute_rollups`, `hourly_rollups`, `daily_rollups`) based on the requested time window.
+* **Stage-level observability:** each request is timed independently at the LLM-routing, Cube-dispatch, and Ollama-synthesis stages (`time.perf_counter`), plus total request latency and process RSS memory, all emitted through structured logger output.
+* **Full interaction logging:** every chat exchange (prompt, resolved query, DB output, response, latency) is written to `ai_agent_logs` for later review.
+* **Roadmap:** `semantic_catalog.py` defines a business-term → technical-metric mapping (e.g. "high latency" → `PingLogs.highestRtt`) intended to replace the hardcoded prompt vocabulary above; it is not yet wired into the LLM routing layer.
+
+---
+
+## Data & Semantic Architecture
+
+The chat agent and dashboard are both served from the same pre-aggregated data layer:
+
+```text
 Raw table: ping_logs(ts, target_id, rtt_ms, is_timeout)
 Rollup views:
   - minute_rollups(ts_minute, target_id, highest_rtt, mean_rtt, ...)
   - hourly_rollups(ts_hour, target_id, highest_rtt, mean_rtt, ...)
   - daily_rollups(ts_day, target_id, highest_rtt, mean_rtt, ...)
+```
 
-**Why this matters**
-- Pre-aggregation reduces query load and keeps interactive response times low.
-- Supports both raw event-level analysis and business-level summaries.
-- This separation makes the platform more scalable and easier to debug.
+* Pre-aggregation reduces query load and keeps interactive response times low for both the dashboard and the chat agent.
+* Cube.js exposes these rollups as a semantic layer (`PingLogs.highestRtt`, `PingLogs.meanRtt`, `PingLogs.packetLossRate`, `Targets.ip`) so the LLM only needs to reason about business-level measures, never raw SQL.
+* Supports both raw event-level analysis and business-level summaries, and keeps the platform scalable and easy to debug.
 
-### Semantic layer
+---
 
-- The platform maps business terms like “high latency” and “packet loss” to technical metrics.
-- Example mapping:
-  - `high latency` → `PingLogs.highestRtt`
-  - `packet loss` → `PingLogs.packetLossRate`
+## Additional Engineering Notes
 
-- `semantic_catalog.py` is a planned module for this mapping.
-  - It is intended to define business-friendly labels, technical field names, and preferred rollup sources.
-  - This gives the platform a more explicit semantic contract than hardcoded prompt text alone.
+* **Request window validation:** the API rejects requests where `start_time >= end_time` and caps query windows to 12 hours to bound memory usage during aggregation.
+* **Environment isolation:** database credentials and API keys live outside the codebase in `.env`; the app fails fast at startup if a required variable is missing. Admin-only actions (editing calendar events, retraining the model, running maintenance) are enforced server-side via a JWT issued after a password check.
+* **NumPy array masking for baseline training:** to avoid an N+1 query pattern during model retraining, historical metrics are fetched in a single bulk query and sliced per event using vectorized boolean masks instead of querying the database inside a loop.
 
-### User-facing flow
+---
 
-1. User asks a question in natural language.
-2. The anonymizer masks sensitive identifiers.
-3. LLM translates the question into Cube JSON.
-4. API sends the query to Cube.js.
-5. Cube.js executes against the rollup views and returns analytics.
-6. The system synthesizes a readable answer.
+## Predictive Modeling & Jitter Corridor
 
-### 2. High-Performance NumPy Array Masking
-To prevent the notorious **N+1 query database timeout vulnerability**, historical model retraining utilizes optimized in-memory array manipulation blocks. Instead of querying the database inside loops, raw metrics are extracted via **exactly one single bulk lookup**, wrapped in high-speed NumPy matrices, and processed utilizing vectorized chronological boolean masks.
-* *Performance Profile:* Drops training cycles from minutes to **milliseconds**.
-
-### 3. Strict RFC 3550 Network Jitter Calculations
-Unlike generic data tools that measure standard deviation against a global mean, this engine calculates network jitter strictly compliant with the internet standard **RFC 3550 protocols**:
+Hovering over the **Latency Profile** chart shows the RTT ± jitter envelope for that minute bucket, rather than a flattened average. Jitter is computed per RFC 3550 — the mean absolute difference between consecutive RTT samples:
 
 $$
 \text{Jitter} = \frac{1}{N}\sum_{i=1}^{N}\vert{}RTT_{i} - RTT_{i-1}\vert{}
 $$
 
-This accurately captures consecutive packet latency variation over time, delivering production-grade accuracy to technical reviewers.
-
-### 4. Defensive Security Window & Memory Constraints
-To isolate the system from memory overloading, the backend API applies strict runtime input verification layers:
-* **Chronological Guard**: Instantly rejects requests if the user sets `start_time >= end_time`.
-* **Resource Ceiling Protection**: Enforces an absolute 7-day restriction boundary on query horizons to guarantee safe memory footprint caps under load.
-
-### 5. Zero-Leak Environment Profile Boundaries
-Database connection structures and application keys are isolated from the codebase using system profiles (`.env`). Standalone automated scripts fetch keys directly, enforcing a **Fail-Fast architecture** that shuts down cleanly with explicit warnings if configurations fail to resolve, keeping your private IP schemas completely safe from code repository leaks.
-
-### 6. Telemetry Aggregation & Real-Time Jitter Corridor
-
-When monitoring live traffic, hovering the cursor over the **Latency Profile** chart displays a statistical real-time volatility envelope. This corridor maps out the immediate micro-variations in packet latency, proving that the application actively measures true network stability rather than just drawing flattened averages.
-
-#### Real-Time UI Telemetry Output
 ![Real-Time Tooltip Telemetry](docs/telemetry-tooltip-hover.png)
 
 `Actual Mean RTT: 6.73 ms (Jitter Upper Boundary: 10.64 ms, Jitter Lower Boundary: 2.82 ms)`
 
----
-
-#### Mathematical Pipeline Example (1-Minute Bin Execution)
-
-To understand how the data stream resolves into these visual boundaries, consider an active 1-minute window capturing **9 consecutive sequential round-trip tracking packets (RTT)**:
-
-$$\text{Raw Telemetry Stream (ms)} = [6, 5, 4, 5, 6, 12, 25, 30, 12]$$
-
-##### Step A: Mean RTT Calculation
-The backend maps the baseline latency by deriving the arithmetic mean of all non-timeout packets:
-
-$$
-\text{Actual Mean RTT} = \frac{6 + 5 + 4 + 5 + 6 + 12 + 25 + 30 + 12}{9} = \frac{105}{9} \approx \mathbf{11.67\text{ ms}}
-$$
-
-##### Step B: RFC 3550 Compliant Network Jitter Generation
-Network jitter is calculated as the average absolute difference between **consecutive** successful packets. This isolates momentary structural routing variances over time:
-
-$$
-\text{Consecutive Deltas } (\Delta RTT) = [|5-6|, |4-5|, |5-4|, |6-5|, |12-6|, |25-12|, |30-25|, |12-30|]
-$$
-
-$$
-\Delta RTT = [1, 1, 1, 1, 6, 13, 5, 18]
-$$
-
-$$
-\text{Actual Jitter} = \frac{1 + 1 + 1 + 1 + 6 + 13 + 5 + 18}{8} = \frac{46}{8} = \mathbf{5.75\text{ ms}}
-$$
-
-#### Step C: Rendering the UI Volatility Corridor Bounds
-The React client (`App.jsx`) receives the `mean_rtt` ($11.67\text{ms}$) and `jitter` ($5.75\text{ms}$) layers and renders the envelope on the fly:
-* **Jitter Upper Boundary** $= \text{Mean RTT} + \text{Jitter} = 11.67 + 5.75 = \mathbf{17.42\text{ ms}}$
-* **Jitter Lower Boundary** $= \max(0, \text{Mean RTT} - \text{Jitter}) = 11.67 - 5.75 = \mathbf{5.92\text{ ms}}$
-
----
-
-## Text-to-SQL NetOps AI Data Agent
-
-The dashboard integrates a conversational AI assistant that translates natural language questions (English and Japanese) into optimized PostgreSQL instructions using a local **Qwen2.5 (1.5B)** inference profile.
-
-```text
-User Question  ──►  System Prompt Injections  ──►  SQL Generation
-                                                       │
-                                                       ▼
-Dashboard      ◄──  Natural Synthesis Engine  ◄──  Read-Only Sanitizer
-Summary Output                                     (Access Denied if mutated)
-```
-
-* **Dynamic Data Routing:** The agent analyzes the user's window context to dynamically target downsampled Materialized Views (`minute_rollups`, `hourly_rollups`, `daily_rollups`), keeping database execution plans highly optimized.
-* **Deterministic Mutation Protection:** Before the generated SQL text touches the database driver cursor, it passes through a strict keyword inspection block. Any string containing unauthorized data mutation keywords (`UPDATE`, `INSERT`, `DROP`, `DELETE`, etc.) is intercepted and blocked instantly.
-* **Automated Optimization Logs:** Every single chat interaction logs the user's prompt, generated queries, exact database outputs, final text responses, and execution performance times to an isolated table (`ai_agent_logs`) for regular model fine-tuning and debugging.
+A lightweight statistical baseline (per-event-category mean RTT/jitter/loss coefficients, `predictor.py`) is trained from historical logs and used to forecast the remainder of the day by overlaying those coefficients on upcoming calendar events.
 
 ---
 
@@ -178,9 +128,13 @@ Summary Output                                     (Access Denied if mutated)
 │   │   └── predictor.py        # Baseline analytics and RFC 3550 jitter
 │   ├── models.py               # Database mappings and audit schema
 │   ├── serializers.py          # REST serializers
+│   ├── permissions.py          # Admin-JWT write-access guard
 │   ├── urls.py                 # Django API routing
 │   ├── views.py                # Guarded web views and AI query pipeline
-│   └── apps.py                 # App initialization and optional tunnel setup
+│   └── apps.py                 # App initialization and remote GPU tunnel setup
+├── cube/                       # Cube.js semantic layer service
+│   ├── docker-compose.yml      # Cube Core container definition
+│   └── schema/                 # Cube.js data model (measures/dimensions)
 ├── config/                     # Global project settings (Django ASGI/WSGI)
 │   └── urls.py
 ├── scripts/                    # Isolated telemetry workers

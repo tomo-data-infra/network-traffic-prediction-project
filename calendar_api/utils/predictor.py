@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
-"""
-predictor.py
-- Network telemetry predictive analytics and statistical forecasting core engine.
-- Implements high-speed NumPy array masking to prevent query-in-loop performance degradation.
-- Calculates network jitter strictly compliant with RFC 3550.
-"""
+"""Statistical baseline training and forecasting for ping telemetry, with RFC 3550 jitter."""
 
-import os
 import json
 import numpy as np
 from datetime import datetime, timedelta, timezone
@@ -27,18 +21,14 @@ def calculate_rfc3550_jitter(rtt_list):
     return float(np.mean(np.abs(np.diff(rtt_list))))
 
 def train_baseline_profiles(days_back=30):
-    """
-    Analyzes historical tracking logs to build a statistical baseline coefficient model matrix.
-    Uses high-speed in-memory NumPy masking to protect against DB query-in-loop latency.
-    """
+    """Builds per-event-category RTT/jitter/loss baselines from historical logs."""
     now = datetime.now(JST)
     start_history = now - timedelta(days=days_back)
 
-    # High-Performance Bulk Data Extraction (Exactly ONE query each)
+    # Bulk-fetch once and mask in memory below, instead of querying per event
     historical_logs = PingLog.objects.filter(ts__range=[start_history, now], target_id=1).order_by('ts')
     historical_events = EventSession.objects.filter(start_ts__lt=now, end_ts__gt=start_history)
 
-    # Convert database streams instantly to memory arrays for rapid computation matrices
     log_ts = np.array([l.ts for l in historical_logs], dtype=object)
     log_rtts = np.array([l.rtt_ms if l.rtt_ms is not None else np.nan for l in historical_logs], dtype=float)
     log_timeouts = np.array([1 if l.is_timeout else 0 for l in historical_logs], dtype=int)
@@ -46,33 +36,28 @@ def train_baseline_profiles(days_back=30):
     event_time_blocks = []
     event_type_data = {}
 
-    # In-Memory Slicing Engine
     for evt in historical_events:
         event_time_blocks.append((evt.start_ts, evt.end_ts))
         cat = evt.session_category
         devices = max(1, evt.expected_devices)
-        
-        # Build an instantaneous high-speed memory mask instead of calling the database again
+
         mask = (log_ts >= evt.start_ts) & (log_ts <= evt.end_ts)
         rtts_in_event = log_rtts[mask]
         timeouts_in_event = log_timeouts[mask]
 
-        # Clean out dropped packets to analyze pure latency
         valid_rtts = rtts_in_event[~np.isnan(rtts_in_event)]
 
         if len(valid_rtts) > 0:
             if cat not in event_type_data:
                 event_type_data[cat] = {"rtt_per_device": [], "jitter_per_device": [], "loss": []}
-            
-            # RFC 3550 compliant jitter extraction
+
             calculated_jitter = calculate_rfc3550_jitter(valid_rtts)
-            
-            # Normalize impact metrics per device to allow scalable runtime linear forecasting
+
+            # Normalize per device so the profile scales linearly with device count
             event_type_data[cat]["rtt_per_device"].append(np.mean(valid_rtts) / devices)
             event_type_data[cat]["jitter_per_device"].append(calculated_jitter / devices)
             event_type_data[cat]["loss"].append(np.mean(timeouts_in_event) if len(timeouts_in_event) > 0 else 0.0)
 
-    # Compile Category Profiles
     profiles = {}
     for cat, metrics in event_type_data.items():
         profiles[cat] = {
@@ -81,7 +66,7 @@ def train_baseline_profiles(days_back=30):
             "loss_baseline": float(np.mean(metrics["loss"]))
         }
 
-    # Extract Global System Idle Baseline using inverse masking array flags
+    # Idle baseline = everything outside any known event window
     is_idle_mask = np.ones(len(log_ts), dtype=bool)
     for start, end in event_time_blocks:
         is_idle_mask &= ~((log_ts >= start) & (log_ts <= end))
@@ -96,10 +81,9 @@ def train_baseline_profiles(days_back=30):
         "loss": float(np.mean(idle_timeouts)) if len(idle_timeouts) > 0 else 0.0
     }
 
-    # Serialize model profile parameters cleanly using absolute tracking targets
     with open(MODEL_PATH, "w") as f:
         json.dump(profiles, f, indent=4)
-        
+
     return profiles
 
 
@@ -112,7 +96,7 @@ def forecast_remaining_day(start_window, end_window):
         with open(MODEL_PATH, "r") as f:
             profiles = json.load(f)
     except FileNotFoundError:
-        # Fallback automated recovery loop if binary file drops
+        # Model file missing (first run, or deleted) — retrain on the fly
         profiles = train_baseline_profiles()
 
     upcoming_events = EventSession.objects.filter(
@@ -135,8 +119,8 @@ def forecast_remaining_day(start_window, end_window):
             cat = active_event.session_category
             devs = active_event.expected_devices
             profile = profiles.get(cat, {"rtt_coef": 0.5, "jitter_coef": 0.1, "loss_baseline": 0.01})
-            
-            # Linear scaling model projection: base idle + (coefficient impact variable * concurrent density)
+
+            # Linear projection: idle baseline + per-device coefficient * device count
             pred_rtt = profiles["_idle"]["rtt"] + (profile["rtt_coef"] * devs)
             pred_jitter = profiles["_idle"]["jitter"] + (profile["jitter_coef"] * devs)
             pred_loss = min(1.0, profile["loss_baseline"] * (devs / 5.0))

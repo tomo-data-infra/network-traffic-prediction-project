@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-ingest_ping_stream.py
-- High-frequency, lightweight background ingestion worker.
-- Intentionally decoupled from Django to optimize memory consumption and resilience.
-"""
+"""Standalone ping ingestion worker. Deliberately decoupled from Django to keep memory/startup light."""
 
 import os
 import sys
@@ -18,9 +14,9 @@ from dotenv import load_dotenv
 # Resolve paths dynamically relative to the script location
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+load_dotenv(os.path.join(PROJECT_ROOT, "../.env"))
 
-# Secure Target ID Input Verification
+# Validate CLI arguments
 if len(sys.argv) < 2:
     print("[ERROR] Target ID argument missing.")
     print("Usage: python scripts/ingest_ping_stream.py <TARGET_ID>")

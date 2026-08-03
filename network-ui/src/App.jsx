@@ -50,8 +50,8 @@ function App() {
   // --- Refs --- 
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
-  const DJANGO_URL = "http://localhost:8000/api"; 
-  const PASSWORD = import.meta.env.VITE_PASSWORD;
+  const DJANGO_URL = "http://localhost:8000/api";
+  const [adminToken, setAdminToken] = useState(null);
 
   // --- API Handlers FETCH TRAFFIC FROM DJANGO --- --- Updated fetchTraffic to bundle actual and forecast pipelines ---
   const fetchTraffic = async (start, end) => {
@@ -66,11 +66,8 @@ function App() {
         return;
       }
 
-      const now = new Date(); // Current real-time clock anchor
-      // Map combined properties into unified array models for chart ingestion
-      // Map backend datasets into synchronous React chart coordinates
+      const now = new Date();
       // Combine 'times' and 'features' into a format Recharts understands
-      // Map combined properties into unified array models for chart ingestion
       const chartPoints = data.times.map((t, i) => {
         const binTime = new Date(t);
         const isFuture = binTime > now; // Check if this time slot is in the future
@@ -110,7 +107,10 @@ function App() {
   const handleTrainModel = async () => {
     if (!window.confirm("Retrain the statistical baseline profile using the past 30 days of data?")) return;
     try {
-      const res = await fetch(`${DJANGO_URL}/train_model/`, { method: 'POST' });
+      const res = await fetch(`${DJANGO_URL}/train_model/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${adminToken}` },
+      });
       const data = await res.json();
       alert(data.status || "Training complete!");
       handleManualUpdate(); // Force visualization refresh
@@ -183,13 +183,20 @@ function App() {
     fetchTraffic(range.start, range.end);
   };
 
-  // UI RENDER HELPERS
-  const handleAuth = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    if (passwordRef.current.value === PASSWORD) {
+    try {
+      const res = await fetch(`${DJANGO_URL}/auth/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordRef.current.value }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setAdminToken(data.token);
       setIsAuthenticated(true);
       setAuthError('');
-    } else {
+    } catch {
       setAuthError('Incorrect Password');
     }
   };
@@ -231,13 +238,13 @@ function App() {
     };
 
     try {
-      const url = modalState.mode === 'create' 
-        ? 'http://localhost:8000/api/event_sessions/' 
-        : `http://localhost:8000/api/event_sessions/${modalState.data.id}/`;
+      const url = modalState.mode === 'create'
+        ? `${DJANGO_URL}/event_sessions/`
+        : `${DJANGO_URL}/event_sessions/${modalState.data.id}/`;
       
       await fetch(url, {
         method: modalState.mode === 'create' ? 'POST' : 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
         body: JSON.stringify(eventData),
       });
       fetchEvents();
@@ -248,7 +255,10 @@ function App() {
   const handleDeleteEvent = async () => {
     if (!window.confirm('Are you sure?')) return;
     try {
-      await fetch(`http://localhost:8000/api/event_sessions/${modalState.data.id}/`, { method: 'DELETE' });
+      await fetch(`${DJANGO_URL}/event_sessions/${modalState.data.id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${adminToken}` },
+      });
       fetchEvents();
       closeModal();
     } catch (err) { console.error('Delete error:', err); }
@@ -505,12 +515,10 @@ function App() {
     </div>
   );
 
-  // --- Main Structural Return ---
   return (
-    /* MASTER WRAPPER NODE - RETAINING THE APP-CONTAINER CLASS TYPE */
     <div className="app-container" style={{ padding: '20px', fontFamily: 'sans-serif', position: 'relative', minHeight: '100vh' }}>
-      
-      {/* Global Framework Header & Admin Status Bar */}
+
+      {/* Header & admin status */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', marginBottom: '20px' }}>
         <h1>Network Traffic EDA Platform</h1>
         <div style={{ fontSize: '14px', color: '#6b7280' }}>

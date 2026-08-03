@@ -5,6 +5,12 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+def ensure_endpoint_suffix(url: str, suffix: str) -> str:
+    """Appends `suffix` to `url` if it isn't already there, tolerating a trailing slash."""
+    if url.endswith(suffix):
+        return url
+    return url.rstrip("/") + suffix
+
 def _cleanup_llm_text(raw_text: str) -> str:
     raw_text = raw_text.strip()
     if raw_text.startswith("```json"):
@@ -63,9 +69,7 @@ def query_tier2_remote_gpu(system_prompt: str, user_question: str) -> str:
 
 def query_tier3_local_ollama(system_prompt: str, user_question: str) -> str:
     """Tier 3: Local Offline System Contingency Layer (Active Development Target)"""
-    url = settings.OLLAMA_API_URL
-    if not url.endswith("/api/generate"):
-        url = url.rstrip("/") + "/api/generate"
+    url = ensure_endpoint_suffix(settings.OLLAMA_API_URL, "/api/generate")
 
     combined_prompt = f"System Instruction:\n{system_prompt}\n\nUser Question:\n{user_question}"
     payload = {

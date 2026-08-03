@@ -1,38 +1,31 @@
 #!/bin/bash
 
-# Terminate conflicting backend or frontend instances
-pkill -9 -f "manage.py"
-pkill -9 -f "vite"
-pkill -9 -f "ssh -N -L 8080"
-
 # Dynamically lock onto the root directory where this script sits
 PROJECT_ROOT=$(dirname "$(readlink -f "$0")")
 cd "$PROJECT_ROOT"
 
+SECURE_ENV="../.env"
+
 # Pull environment configurations manually
-if [ -f ".env" ]; then
-    export $(cat .env | grep -v '#' | xargs)
+if [ -f "$SECURE_ENV" ]; then
+    export $(cat "$SECURE_ENV" | grep -v '#' | xargs)
 else
-    echo "[ERROR] Main .env file not found."
+    echo "[ERROR] Secure .env file not found."
     exit 1
 fi
+
+# Terminate conflicting backend or frontend instances
+pkill -9 -f "manage.py"
+pkill -9 -f "vite"
+pkill -9 -f "ssh -N -L $LOCAL_FORWARD_PORT"
 
 # Start Cube Core container natively in WSL
 echo "Starting Containerized Cube Core Semantic Layer..."
 cd "$PROJECT_ROOT/cube"
-sudo docker compose --env-file ../.env up -d
+sudo docker compose --env-file ../../.env up -d
 
-# Initialize Secure Remote GPU Server SSH Network Tunnel
-echo "Opening Private Remote GPU Tunnel on Local Port $LOCAL_FORWARD_PORT..."
-# ssh -f -N -L $LOCAL_FORWARD_PORT:127.0.0.1:$REMOTE_LLM_PORT user@$REMOTE_GPU_SERVER_IP
-ssh -f -N -L $LOCAL_FORWARD_PORT:127.0.0.1:$REMOTE_LLM_PORT ${REMOTE_GPU_USER}@${REMOTE_GPU_SERVER_IP}
-
-
-# Check if Docker failed, but force directory reset regardless
-#if [ $? -ne 0 ]; then
-#    echo "Docker Compose hit a warning/error, continuing system boot..."
-#fi
-
+# Note: the Remote GPU SSH tunnel is opened automatically by Django on startup
+# (calendar_api/apps.py), so it isn't opened here.
 
 # Start Django Backend
 echo "Starting Django Backend Server..."

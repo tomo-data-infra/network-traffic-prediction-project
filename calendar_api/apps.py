@@ -16,17 +16,22 @@ class CalendarApiConfig(AppConfig):
             return
 
         remote_host = getattr(settings, 'REMOTE_GPU_SERVER_IP', None)
-        if not remote_host:
-            logger.info("[SSH Tunnel Bypassed] REMOTE_GPU_SERVER_IP is not set.")
+        remote_user = getattr(settings, 'REMOTE_GPU_USER', None)
+        local_port = getattr(settings, 'LOCAL_FORWARD_PORT', None)
+        remote_port = getattr(settings, 'REMOTE_LLM_PORT', None)
+
+        if not remote_host or not remote_user or not local_port or not remote_port:
+            logger.info("[SSH Tunnel Bypassed] Remote GPU tunnel settings are not fully configured.")
             return
 
-        logger.info("[SSH Tunnel System] Initializing automated background tunnel to %s", remote_host)
+        target = f"{remote_user}@{remote_host}"
+        logger.info("[SSH Tunnel System] Initializing automated background tunnel to %s", target)
 
         ssh_command = [
             "ssh",
             "-N",
-            "-L", "8080:127.0.0.1:11434",
-            remote_host
+            "-L", f"{local_port}:127.0.0.1:{remote_port}",
+            target
         ]
 
         try:
@@ -37,8 +42,8 @@ class CalendarApiConfig(AppConfig):
             )
             atexit.register(tunnel_process.terminate)
             logger.info(
-                "[SSH Tunnel System] Tunnel connection anchored on Local Port 8080 (PID: %s)",
-                tunnel_process.pid
+                "[SSH Tunnel System] Tunnel connection anchored on Local Port %s (PID: %s)",
+                local_port, tunnel_process.pid
             )
         except Exception:
             logger.exception("[SSH Tunnel Error] Failed to initialize automated port bridge")

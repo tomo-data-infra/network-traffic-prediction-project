@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load local environment configuration profile
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / '../.env')
 
 # ---- SECURITY CONFIGURATIONS ----
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -100,6 +100,9 @@ REMOTE_GPU_USER = os.getenv('REMOTE_GPU_USER')
 REMOTE_GPU_SERVER_IP = os.getenv('REMOTE_GPU_SERVER_IP')
 LOCAL_FORWARD_PORT = os.getenv('LOCAL_FORWARD_PORT')
 REMOTE_LLM_PORT = os.getenv('REMOTE_LLM_PORT')
+
+# ---- ADMIN AUTH (server-side only; never exposed to the frontend bundle) ----
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 # ---- CORE REGULATORY & REGIONALIZATIONS ----
 LANGUAGE_CODE = 'en-us'
