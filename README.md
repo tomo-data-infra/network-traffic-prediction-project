@@ -23,7 +23,7 @@ The project is intentionally engineered across decoupled layers to minimize reso
 ┌─────────────────────────────────────────────────────────┐
 │              Django REST Framework Backend              │
 │    - AI Query Agent (LLM Cascade + Cube.js Dispatch)    │
-│       - Predictive Modeling (NumPy Memory Masking)      │
+│      - Statistical Forecasting (vectorized aggregation) │
 │       - Security Guardrails & Input Validation          │
 └────────────────────────────┬────────────────────────────┘
                              │
@@ -43,7 +43,7 @@ The project is intentionally engineered across decoupled layers to minimize reso
 ```
 
 ### Core Components
-1. **Web Backend API (`calendar_api/`, `config/`)**: A Django REST Framework service that hosts the multi-tier AI query agent, predictive computing engines, and time-boundary/input validation.
+1. **Web Backend API (`calendar_api/`, `config/`)**: A Django REST Framework service that hosts the multi-tier AI query agent, a lightweight statistical forecasting engine, and time-boundary/input validation.
 2. **Frontend UI (`network-ui/`)**: A single-page dashboard built with React and Vite. It renders the NetOps chat agent, real-time latency monitors, statistical uncertainty corridors, and business calendar schedules.
 3. **Telemetry Ingestion Worker (`scripts/`)**: An ultra-lightweight, high-frequency standalone Python worker that interacts directly with network sockets and streams metrics without loading the web framework overhead.
 
@@ -98,6 +98,10 @@ Rollup views:
 * **Environment isolation:** database credentials and API keys live outside the codebase in `.env`; the app fails fast at startup if a required variable is missing. Admin-only actions (editing calendar events, retraining the model, running maintenance) are enforced server-side via a JWT issued after a password check.
 * **NumPy array masking for baseline training:** to avoid an N+1 query pattern during model retraining, historical metrics are fetched in a single bulk query and sliced per event using vectorized boolean masks instead of querying the database inside a loop.
 
+### Known Gaps
+* `google-genai` isn't pinned in `requirements.in` yet, so the Gemini tier (Tier 1) no-ops on a fresh install until it's added — the cascade falls through to Tier 2/3 automatically in the meantime.
+* Telemetry ingestion and the baseline predictor currently target a single hardcoded node (`target_id=1`); the schema (`Targets` table, Cube.js `Targets` cube) supports multiple targets, but target selection isn't yet exposed in the UI/API.
+
 ---
 
 ## Predictive Modeling & Jitter Corridor
@@ -142,13 +146,13 @@ A lightweight statistical baseline (per-event-category mean RTT/jitter/loss coef
 ├── .env.example                # Deployment configuration template
 ├── .gitignore                  # Repository ignore rules
 ├── requirements.txt            # Python dependencies
-├── start_app.sh                # Production interface launcher (Web + API)
+├── start_app.sh                # Local dev launcher (Django dev server + Vite dev server)
 └── start_ping_collecting.sh    # Isolated telemetry stream launcher
 ```
 
 ---
 
-## Quick Start & Deployment Guide
+## Local Development Setup
 
 ### 1. Environmental Setup
 Clone the repository and build your isolated python virtual environment inside the root directory:
