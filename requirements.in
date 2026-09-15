@@ -3,17 +3,20 @@ pip-audit >= 2.10.0
 pip-tools >= 7.5.3
 
 # --- Web Framework ---
-Django>=6.0.7
-djangorestframework >= 3.17.1
+Django>=6.0.8
+djangorestframework >= 3.17.2
 django-cors-headers >= 4.9.0
 
 # --- DB Adapter ---
 psycopg2-binary >= 2.9.12
 
+# --- GenAI / RAG ---
+google-genai >= 1.0.0
+
 # --- Other ---
 pygments >= 2.20.0
 requests >= 2.33.0
-cryptography >= 48.0.1
+cryptography >= 50.0.0
 python-dotenv >= 1.2.2
 pillow >= 12.3.0
 numpy >= 2.4.6
@@ -23,3 +26,4 @@ urllib3 >= 2.7.0
 msgpack >= 1.2.1
 PyJWT >= 2.13.0
 psutil >= 7.2.2
+sqlparse >= 0.6.0

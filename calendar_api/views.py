@@ -14,7 +14,7 @@ from django.utils import timezone as django_tz
 from django.db import connection
 from .models import EventSession, PingLog, Target, AIAgentLog
 from .serializers import EventSessionSerializer, PingLogSerializer, TargetSerializer
-from .utils import features, predictor, anonymizer, llm_router
+from .utils import features, predictor, anonymizer, llm_router, semantic_catalog, rag
 from .permissions import IsAdminOrReadOnly
 from datetime import datetime, timedelta, timezone
 import psutil
@@ -205,7 +205,7 @@ class NetOpsAgentCoreView(APIView):
                 return Response({"error": "No question provided"}, status=status.HTTP_400_BAD_REQUEST)
 
             safe_masked_question, ip_token_map = self._mask_question(user_question)
-            system_prompt = self._build_system_prompt()
+            system_prompt = self._build_system_prompt(safe_masked_question)
 
             cube_query_raw, llm_elapsed_ms = self._run_llm_cascade(system_prompt, safe_masked_question)
             self._log_llm_payload(cube_query_raw, llm_elapsed_ms)
@@ -220,6 +220,11 @@ class NetOpsAgentCoreView(APIView):
                 return Response({
                     "error": f"Anonymizer resolution mapping failure: {str(anon_err)}"
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Force JST regardless of what (if anything) the LLM set -- this app's dateRange
+            # semantics ("September 10") and displayed timestamps should match its one true
+            # operating timezone (config/settings.py TIME_ZONE), not Cube.js's UTC default.
+            final_cube_payload["timezone"] = "Asia/Tokyo"
 
             cube_res, body, analytics_data = self._dispatch_cube_query(final_cube_payload)
 
@@ -253,7 +258,20 @@ class NetOpsAgentCoreView(APIView):
         """Mask IPs before anything leaves the process (LLM calls, logs)."""
         return anonymizer.mask_sensitive_data(user_question)
 
-    def _build_system_prompt(self):
+    def _build_system_prompt(self, question):
+        # RAG: embed the question, retrieve only the catalog entries relevant to it (falls
+        # back to the full catalog on any embedding failure), inject as business vocabulary.
+        relevant_entries = rag.retrieve_relevant_catalog_entries(question)
+        business_terms = semantic_catalog.build_catalog_context(relevant_entries)
+
+        # Known node aliases, injected as a controlled vocabulary (not a RAG similarity
+        # search -- an alias like "R1_DGW" is an exact identifier, not a paraphrase-prone
+        # business term, so a plain lookup list is the right mechanism here).
+        known_labels = list(
+            Target.objects.exclude(label__isnull=True).exclude(label="").values_list("label", flat=True)
+        )
+        labels_hint = ", ".join(known_labels) if known_labels else "(none configured)"
+
         return f"""
             You are an AI NetOps Data Agent. Your task is to translate network queries into a Cube.js semantic layer query JSON object.
 
@@ -265,10 +283,23 @@ class NetOpsAgentCoreView(APIView):
 
             Dimensions:
             - "PingLogs.ts": The timestamp of network log events.
-            - "Targets.ip": The target IP address string variable.
+            - "Targets.ip": The target IP address string variable. Only use this if the user's
+              question itself contains a literal IP-like token (e.g. "TARGET_NODE_1").
+            - "Targets.label": A human-readable alias for a target node (e.g. "R1_DGW"). Prefer
+              this over "Targets.ip" whenever the user refers to a node by name.
+
+            KNOWN TARGET NODE ALIASES: {labels_hint}
+
+            BUSINESS TERMINOLOGY (map these phrases to the technical measures above):
+            {business_terms}
 
             FILTER COMPLIANCE REQ:
-            - You MUST always apply a filter parameter constraining "Targets.ip" to equal the specified node string (e.g. "TARGET_NODE_1").
+            - If the user's question names a specific node (by alias or IP), you MUST add exactly
+              ONE filter: "Targets.label" equal to the matching alias from KNOWN TARGET NODE
+              ALIASES (preferred), or "Targets.ip" only if the user gave a literal IP-like token.
+              Never include both.
+            - If the user's question does NOT name a specific node, do NOT include any
+              "Targets.*" filter at all.
 
             OUTPUT METRIC TEMPLATE EXAMPLE:
             {{
@@ -286,6 +317,9 @@ class NetOpsAgentCoreView(APIView):
             "order": {{"PingLogs.highestRtt": "desc"}},
             "limit": 1
             }}
+            (If the node was named by alias rather than IP, use "member": "Targets.label" in the
+            filter above instead of "Targets.ip" -- everything else stays the same. "TARGET_NODE_1"
+            above is just a placeholder; substitute whichever alias or IP-token the question named.)
             Assume current year is 2026 if omitted. Return raw JSON block object only.
             """
 
@@ -371,7 +405,15 @@ class NetOpsAgentCoreView(APIView):
     # ---- Stage 4: answer synthesis ------------------------------------------------------
 
     def _synthesize_answer(self, user_question, analytics_data):
-        synthesis_prompt = f"Synthesize this database data context into a concise message answer responding to: '{user_question}'. Data: {json.dumps(analytics_data)}"
+        # Relabel raw Cube.js measure keys (e.g. "PingLogs.meanRtt") with friendly display
+        # names/units, and reformat PingLogs.ts into "YYYY-MM-DD HH:MM (JST)" -- both for the
+        # synthesis prompt only. The caller still logs analytics_data unchanged (see
+        # _log_interaction) since raw member names/timestamps are more useful in logs. JST
+        # formatting is done here in Python, not left to the small local Ollama model, since
+        # timezone arithmetic is exactly the kind of thing a 1.5b model gets wrong silently.
+        display_data = semantic_catalog.relabel_rows(analytics_data)
+        display_data = semantic_catalog.format_timestamps(display_data)
+        synthesis_prompt = f"Synthesize this database data context into a concise message answer responding to: '{user_question}'. Data: {json.dumps(display_data)}"
 
         ollama_endpoint = llm_router.ensure_endpoint_suffix(settings.OLLAMA_API_URL, '/api/generate')
 
