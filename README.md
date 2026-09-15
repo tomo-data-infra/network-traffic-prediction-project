@@ -6,7 +6,7 @@ A natural-language query agent for network telemetry: ask plain-English (or Japa
 
 ## Demo: AI NetOps Chat Agent
 
-<video src="docs/ai_chat_demo.mp4" controls width="700"></video>
+<video src="https://raw.githubusercontent.com/tomo-data-infra/network-traffic-prediction-project/main/docs/ai_chat_demo.mp4" controls width="700"></video>
 
 This is a network telemetry and analytics platform with a natural-language query interface. The engine ingests real-time raw telemetry streams, processing and rendering time-series metrics onto a unified React dashboard layout.
 
