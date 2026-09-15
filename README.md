@@ -4,6 +4,20 @@ A natural-language query agent for network telemetry: ask plain-English (or Japa
 
 ---
 
+## Demo: AI NetOps Chat Agent
+
+<video src="docs/ai_chat_demo.mp4" controls width="700"></video>
+
+This is a network telemetry and analytics platform with a natural-language query interface. The engine ingests real-time raw telemetry streams, processing and rendering time-series metrics onto a unified React dashboard layout.
+
+We can query the system natively via our natural-language data agent. Let's ask for the peak minutely average latency on a specific date. We target the query using a descriptive alias, `R1_DGW`, instead of a raw IP address — the underlying node's IP never appears in the prompt, the LLM's context, or the request logs.
+
+The agent translates the question into a Cube.js semantic query, not raw SQL, so there's no SQL-injection surface to defend in the first place. A RAG layer retrieves the relevant business-metric vocabulary — embedded once per process, matched by cosine similarity — to ground the translation, which is then routed through a cascading multi-LLM architecture that defaults to a commercial API and falls back to offline local inference if it's unavailable.
+
+The agent resolves the query end-to-end — LLM translation, Cube.js dispatch, and local synthesis chained across three network calls — in around 30+ seconds. Cross-referencing our time-series profile verifies the data: the actual mean RTT spikes to exactly 39.47 milliseconds at 15:09 JST.
+
+---
+
 ## System Architecture & Separation of Concerns
 
 The project is intentionally engineered across decoupled layers to minimize resource contention, maximize system resilience, and isolate the real-time processing threads from the web presentation application layers.
