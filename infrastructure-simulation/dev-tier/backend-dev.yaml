@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netops-backend
+  namespace: netops-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netops-backend
+  template:
+    metadata:
+      labels:
+        app: netops-backend
+    spec:
+      containers:
+      - name: backend-api
+        image: python:3.11-slim
+        # See premium-tier-alpha/backend-premium.yaml -- same placeholder caveat applies.
+        command: ["sh", "-c"]
+        args:
+          - |
+            mkdir -p /srv/www && \
+            printf '{"tier": "dev", "namespace": "netops-dev", "role": "backend-placeholder"}' > /srv/www/index.json && \
+            cd /srv/www && python -u -m http.server 8000
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "16Mi"
+          limits:
+            cpu: "100m"
+            memory: "32Mi"
+        readinessProbe:
+          httpGet:
+            path: /index.json
+            port: 8000
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /index.json
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
