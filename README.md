@@ -56,6 +56,12 @@ The Kubernetes objects above (`Namespace`/`Deployment`/`Service`/`NetworkPolicy`
 | Storage class | EBS CSI (`gp3`) | GCE PD CSI (`pd-balanced`) |
 | Managed DB equivalent | RDS | Cloud SQL |
 
+### Background reference: how Minikube works (general)
+
+[Comprehensive Minikube Architecture (PDF)](https://github.com/user-attachments/files/32923700/Comprehensive_Minikube_Architecture.pdf) — a generic, textbook-style diagram of Minikube's internals (multi-node cluster, Control Plane, Kubelet, Containerd, generic pod scheduling).
+
+**This diagram is not a depiction of this project's actual architecture.** It shows a generic 3-node cluster with placeholder pods — this simulation itself runs on a single node by default, with the specific namespaces, Deployments, and Services described in "Tiered Multi-Tenant Namespace Isolation" above. For the real topology, see that section, not this PDF.
+
 ### Running it locally
 
 ```bash
