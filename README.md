@@ -56,13 +56,19 @@ The Kubernetes objects above (`Namespace`/`Deployment`/`Service`/`NetworkPolicy`
 | Storage class | EBS CSI (`gp3`) | GCE PD CSI (`pd-balanced`) |
 | Managed DB equivalent | RDS | Cloud SQL |
 
+### Diagram: this simulation's actual topology
+
+![Minikube architecture diagram reflecting the actual namespaces, Deployments, Services, NetworkPolicies, and HPA in this repo](docs/minikube-architecture-diagram.png)
+
+Namespace-by-namespace breakdown of every object actually defined in `infrastructure-simulation/` — exact `apiVersion`/`kind`/`metadata`, resource `requests`/`limits` per tier, and the HPA's real `minReplicas`/`maxReplicas`/CPU threshold. Not yet depicted: the `podAntiAffinity` block on the premium frontend and the readiness/liveness probes (planned for a future update to this diagram) — see the actual YAML files in `infrastructure-simulation/` for those in the meantime.
+
 ### Background reference: how Minikube works (general)
 
-![Comprehensive Minikube Architecture](docs/Comprehensive_Minikube_Architecture.png)
+![Comprehensive Minikube Architecture](docs/minikube-generic-base-architecture.png)
 
 A generic, textbook-style diagram of Minikube's internals (multi-node cluster, Control Plane, Kubelet, Containerd, generic pod scheduling).
 
-**This diagram is not a depiction of this project's actual architecture.** It shows a generic 3-node cluster with placeholder pods — this simulation itself runs on a single node by default, with the specific namespaces, Deployments, and Services described in "Tiered Multi-Tenant Namespace Isolation" above. For the real topology, see that section, not this diagram.
+**This diagram is not a depiction of this project's actual architecture.** It shows a generic multi-node cluster with placeholder pods — this simulation itself runs on a single node by default, with the specific namespaces, Deployments, and Services depicted accurately in the diagram above and described in "Tiered Multi-Tenant Namespace Isolation" earlier in this section. For the real topology, use those, not this generic diagram.
 
 ### Running it locally
 
