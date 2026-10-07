@@ -30,7 +30,7 @@ The agent resolves the query end-to-end — LLM translation, Cube.js dispatch, a
 | Backend replicas | 1 | 1 | 1 |
 | Load balancing | `Service` (ClusterIP) across all frontend replicas | `Service` (ClusterIP) | `Service` (ClusterIP) |
 | Network isolation | `NetworkPolicy`, denies cross-namespace ingress — verified: cross-namespace `wget` times out | Same | Same — dev is isolated from both customer tenants, and they from it |
-| Node spreading | `podAntiAffinity` (effective with `minikube start --nodes=2+`) | Not applicable — single replica | Not applicable |
+| Node spreading | `podAntiAffinity`, active by default on this 2-node cluster | Not applicable — single replica | Not applicable |
 
 `netops-dev` represents the SaaS provider's own internal development/staging environment — distinct from both customer tenant namespaces, and isolated from them the same way they're isolated from each other, so neither real customer traffic nor in-progress dev work can cross that boundary.
 
@@ -55,12 +55,23 @@ The Kubernetes objects above (`Namespace`/`Deployment`/`Service`/`NetworkPolicy`
 | Workload identity | IAM Roles for Service Accounts | Workload Identity |
 | Storage class | EBS CSI (`gp3`) | GCE PD CSI (`pd-balanced`) |
 | Managed DB equivalent | RDS | Cloud SQL |
+| Node-level autoscaling | Cluster Autoscaler via EKS managed node groups | Cluster Autoscaler via GKE node pools |
 
 ### Diagram: this simulation's actual topology
 
-![Minikube architecture diagram reflecting the actual namespaces, Deployments, Services, NetworkPolicies, and HPA in this repo](docs/minikube-architecture-diagram.png)
+![Minikube architecture diagram reflecting the actual namespaces, Deployments, Services, NetworkPolicies, and HPA in this repo](docs/minikube-architecture-diagram-v2.png)
 
-Namespace-by-namespace breakdown of every object actually defined in `infrastructure-simulation/` — exact `apiVersion`/`kind`/`metadata`, resource `requests`/`limits` per tier, and the HPA's real `minReplicas`/`maxReplicas`/CPU threshold. Not yet depicted: the `podAntiAffinity` block on the premium frontend and the readiness/liveness probes (planned for a future update to this diagram) — see the actual YAML files in `infrastructure-simulation/` for those in the meantime.
+Namespace-by-namespace breakdown of every object actually defined in `infrastructure-simulation/` — exact `apiVersion`/`kind`/`metadata`, resource `requests`/`limits` per tier, the HPA's real `minReplicas`/`maxReplicas`/CPU threshold, and how the readiness/liveness probes and HPA actually behave (the HPA box notes explicitly that it only adjusts pod replica count and has no awareness of underlying node capacity — see the next section for why that distinction matters). The cluster runs 2 nodes by default here so `podAntiAffinity` on the premium frontend has real effect; the specific `podAntiAffinity` YAML block itself isn't shown as its own text box yet (planned for a future update) — see `infrastructure-simulation/premium-tier-alpha/frontend-premium.yaml` for that in the meantime.
+
+### Future work: pairing HPA with a real Cluster Autoscaler (GKE)
+
+![Conceptual diagram showing a Cluster Autoscaler provisioning a third node in response to Pending pods](docs/minikube-architecture-diagram-Cluster-Autoscaler.png)
+
+**This is a conceptual diagram, not something implemented in this Minikube simulation.** It illustrates the idea: `HorizontalPodAutoscaler` requests more pod replicas based on CPU load, and if existing nodes don't have capacity, those pods sit `Pending` until something provisions more node capacity — that "something" is a Cluster Autoscaler, a node-level mechanism distinct from the HPA's pod-level one.
+
+Minikube doesn't have a cloud API to provision real nodes against, so a genuine Cluster Autoscaler doesn't run the same way here as it would on a managed cluster. I looked into making this real locally: the native `minikube addons enable cluster-autoscaler` command exists only in an unmerged, work-in-progress [upstream PR](https://github.com/kubernetes/minikube/pull/23809) as of this writing, and the only currently-working alternative is a third-party addon requiring a privileged host-side bridge process and 16GB+ of RAM — a heavy, unvetted (zero-adoption) dependency not worth taking on for a local demo.
+
+The real implementation path is GKE's native, fully-supported Cluster Autoscaler on an actual node pool once this migrates off Minikube — planned with a **2 to 3 node boundary** (`--min-nodes=2 --max-nodes=3`), matching the premium tier's existing HPA elasticity story (2–5 pod replicas) one layer up at the node level.
 
 ### Background reference: how Minikube works (general)
 
@@ -68,12 +79,12 @@ Namespace-by-namespace breakdown of every object actually defined in `infrastruc
 
 A generic, textbook-style diagram of Minikube's internals (multi-node cluster, Control Plane, Kubelet, Containerd, generic pod scheduling).
 
-**This diagram is not a depiction of this project's actual architecture.** It shows a generic multi-node cluster with placeholder pods — this simulation itself runs on a single node by default, with the specific namespaces, Deployments, and Services depicted accurately in the diagram above and described in "Tiered Multi-Tenant Namespace Isolation" earlier in this section. For the real topology, use those, not this generic diagram.
+**This diagram is not a depiction of this project's actual architecture.** It shows a generic multi-node cluster with placeholder pods — this simulation's specific namespaces, Deployments, and Services are depicted accurately in the diagram above and described in "Tiered Multi-Tenant Namespace Isolation" earlier in this section. For the real topology, use those, not this generic diagram.
 
 ### Running it locally
 
 ```bash
-minikube start --driver=docker
+minikube start --driver=docker --nodes=2
 minikube addons enable metrics-server
 
 kubectl apply -f infrastructure-simulation/namespaces.yaml
