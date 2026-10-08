@@ -50,7 +50,7 @@ function App() {
   // --- Refs --- 
   const calendarRef = useRef(null);
   const passwordRef = useRef(null);
-  const DJANGO_URL = "http://localhost:8000/api";
+  const DJANGO_URL = import.meta.env.VITE_API_URL;
   const [adminToken, setAdminToken] = useState(null);
 
   // --- API Handlers FETCH TRAFFIC FROM DJANGO --- --- Updated fetchTraffic to bundle actual and forecast pipelines ---

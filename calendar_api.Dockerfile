@@ -6,7 +6,12 @@
 # of what .dockerignore excludes from the build context)
 
 # ---- Stage 1: install dependencies into an isolated venv ----
-FROM python:3.14-slim AS builder
+# Pinned to 3.12, not 3.14 (.python-version's local dev version) -- 3.14 is new enough that
+# several dependencies don't ship prebuilt wheels for it yet, which was failing `pip install`
+# during build (falling back to source compilation, which then failed). This means the image's
+# Python version now diverges from local dev -- worth knowing if something passes locally on
+# 3.14 but behaves differently in the container; revisit once wheel coverage catches up.
+FROM python:3.12-slim AS builder
 
 WORKDIR /build
 
@@ -25,7 +30,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # ---- Stage 2: minimal runtime image ----
-FROM python:3.14-slim AS runtime
+FROM python:3.12-slim AS runtime
 
 # Non-root, no login shell, no home directory -- least-privilege by default
 RUN groupadd --system app && useradd --system --gid app --no-create-home --shell /usr/sbin/nologin app
@@ -58,4 +63,10 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 # pre-existing schema -- this only ever touches Django's built-in auth/admin/sessions tables)
 # before handing off to gunicorn. `exec` replaces the shell so gunicorn receives SIGTERM
 # directly for a clean shutdown, instead of the shell swallowing it.
-CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-3}"]
+#
+# --no-control-socket: gunicorn >=25.1 defaults to a control socket under $HOME/.gunicorn/;
+# the `app` user has --no-create-home (no $HOME to write to), which otherwise logs
+# "Control server error: Permission denied" on every start. Not used by this deployment
+# (single sync worker, nothing drives gunicornc), so disabling it is a clean fix, not a
+# workaround for a capability we actually need.
+CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-3} --no-control-socket"]

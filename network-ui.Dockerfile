@@ -24,6 +24,16 @@ WORKDIR /build
 COPY network-ui/package.json network-ui/package-lock.json* ./
 RUN npm ci
 
+# Vite bakes VITE_-prefixed env vars into the bundle AT BUILD TIME (not read at container
+# startup -- see the top-of-file note on why that matters for deploying this image anywhere
+# but local testing). Nothing in network-ui/ supplies VITE_API_URL automatically -- no
+# .env/.env.production exists, .env.example is a template Vite never auto-loads, and
+# .dockerignore excludes .env* from the build context anyway -- so without this ARG, Vite
+# bakes in `undefined` and every API call in the shipped app silently breaks.
+# Build with: docker build -f network-ui.Dockerfile --build-arg VITE_API_URL=http://localhost:8000/api -t netops-frontend:local .
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 COPY network-ui/ ./
 RUN npm run build
 

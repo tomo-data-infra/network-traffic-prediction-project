@@ -42,8 +42,8 @@ What's actually in place vs. deliberately deferred:
 - ✅ Real network isolation (`NetworkPolicy`, confirmed via cross-namespace connectivity test)
 - ✅ Load-balanced frontend (`Service`, confirmed via `Endpoints` listing all replica IPs)
 - ✅ CPU-based autoscaling on the premium tier (`HorizontalPodAutoscaler`)
-- ⚠️ Dockerfiles written for both real services (`calendar_api.Dockerfile`, `network-ui.Dockerfile`) — multi-stage, non-root — but the backend image **has not yet built successfully**; local verification hit a `pip install` failure (suspected `python:3.14-slim` base image / package wheel mismatch, not yet root-caused) and is paused
-- ❌ Not yet wired into the simulation — the `infrastructure-simulation/` Deployments still reference the placeholder containers (`nginx:alpine`, a Python stub), not these images; the frontend's backend URL (`DJANGO_URL` in `App.jsx`) is also hardcoded to `localhost:8000`, which won't resolve correctly once actually deployed behind a K8s Service
+- ✅ Dockerfiles for both real services (`calendar_api.Dockerfile`, `network-ui.Dockerfile`) — multi-stage, non-root, build and run verified locally: both containers boot cleanly (migrations succeed, gunicorn starts with no errors, nginx serves the real build), and a live browser test confirms the frontend calls the backend end-to-end — the Traffic Dashboard renders real data fetched from `/api/ping_data/`
+- ❌ Not yet wired into the simulation — the `infrastructure-simulation/` Deployments still reference the placeholder containers (`nginx:alpine`, a Python stub), not these images, and neither image has been pushed or loaded into Minikube yet. The frontend's backend URL (`VITE_API_URL`) is a build-time Docker ARG, confirmed working for local testing — pointing it at the right in-cluster Service DNS name and rebuilding per-environment is still a follow-up step before this works inside `infrastructure-simulation/`
 - ❌ Ingress/TLS, Secrets management, persistent storage — not yet ported to this cluster
 
 ### What Minikube does and doesn't simulate
