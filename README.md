@@ -42,7 +42,8 @@ What's actually in place vs. deliberately deferred:
 - ✅ Real network isolation (`NetworkPolicy`, confirmed via cross-namespace connectivity test)
 - ✅ Load-balanced frontend (`Service`, confirmed via `Endpoints` listing all replica IPs)
 - ✅ CPU-based autoscaling on the premium tier (`HorizontalPodAutoscaler`)
-- ❌ Real application images — Deployments currently run placeholder containers (`nginx:alpine`, a Python stub serving a tier-identity JSON) rather than the actual Django/React app; no Dockerfile exists yet for either
+- ⚠️ Dockerfiles written for both real services (`calendar_api.Dockerfile`, `network-ui.Dockerfile`) — multi-stage, non-root — but the backend image **has not yet built successfully**; local verification hit a `pip install` failure (suspected `python:3.14-slim` base image / package wheel mismatch, not yet root-caused) and is paused
+- ❌ Not yet wired into the simulation — the `infrastructure-simulation/` Deployments still reference the placeholder containers (`nginx:alpine`, a Python stub), not these images; the frontend's backend URL (`DJANGO_URL` in `App.jsx`) is also hardcoded to `localhost:8000`, which won't resolve correctly once actually deployed behind a K8s Service
 - ❌ Ingress/TLS, Secrets management, persistent storage — not yet ported to this cluster
 
 ### What Minikube does and doesn't simulate

@@ -1,0 +1,22 @@
+# Keeps the build context small and makes sure secrets/local state never get sent to the
+# Docker daemon in the first place -- defense-in-depth on top of the Dockerfiles' explicit,
+# selective COPY instructions.
+.git/
+.github/
+venv/
+network-ui/node_modules/
+network-ui/dist/
+logs/
+docs/
+infrastructure-simulation/
+*.md
+.env
+.env.*
+.python-version
+.aiexclude
+.claudeignore
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.pytest_cache/
+predicted_traffic_model.json
