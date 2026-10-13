@@ -72,7 +72,33 @@ Namespace-by-namespace breakdown of every object actually defined in `infrastruc
 
 Minikube doesn't have a cloud API to provision real nodes against, so a genuine Cluster Autoscaler doesn't run the same way here as it would on a managed cluster. I actually attempted this locally before concluding that — the attempt (and exactly why it fails) is documented in `infrastructure-simulation/cluster-autoscaler.yaml`: deploying the real upstream `cluster-autoscaler` binary with `--cloud-provider=gce` crashes immediately, since it queries GCP's instance metadata server (`169.254.169.254`) to self-identify, and a Minikube node is a Docker container on your own machine, not a real GCE VM. I also checked for Minikube's own native addon (`minikube addons enable cluster-autoscaler`) and confirmed via `minikube addons list` that it isn't available — that addon only exists in an unmerged, draft [upstream PR](https://github.com/kubernetes/minikube/pull/23809) as of this writing. The remaining alternative, a third-party addon requiring a privileged host-side bridge process and 16GB+ of RAM, was a heavy, unvetted (zero-adoption) dependency not worth taking on for a local demo.
 
-The real implementation path is GKE's native, fully-supported Cluster Autoscaler on an actual node pool, which is where this is headed next — planned with `--min-nodes=2 --max-nodes=5`, matching the premium tier's `HorizontalPodAutoscaler` bounds exactly (`minReplicas: 2, maxReplicas: 5` in `hpa-frontend-premium.yaml`) so node capacity can always accommodate the HPA's full pod-replica range.
+The real implementation path is GKE's native, fully-supported Cluster Autoscaler on an actual node pool — and I've since actually run that test, not just planned it.
+
+#### Attempted on real GKE — findings so far (cluster since deleted to stop billing)
+
+Provisioned a real GKE Standard regional cluster (3 zones, `e2-medium` nodes, `--min-nodes=2 --max-nodes=5` per zone) and forced a scale-up scenario against the premium tier's frontend. Three concrete findings, documented honestly rather than as a finished clean success:
+
+**1. A regional IP-address quota capped real node count at 8, independent of the configured max.** Confirmed directly from GKE's own `cluster-autoscaler-status` configmap, not inferred:
+```
+errorCode: QUOTA_EXCEEDED
+errorMessage: 'Instance ... creation failed: Quota "IN_USE_ADDRESSES" exceeded. Limit: 8.0 in region <REGION>.'
+```
+This is a default new-project quota, unrelated to CPU/machine-type sizing — it blocks the 9th node outright no matter how pod resources are sized. Next step: request an `IN_USE_ADDRESSES` quota increase before re-testing at real scale.
+
+**2. CPU request sizing mattered more than expected, and the right number had to be derived empirically, not guessed.** `e2-medium` nodes have 940m allocatable CPU (2000m capacity − 1060m GKE system reservation), but GKE's own per-node system DaemonSets (`fluentbit`, `gke-metrics-agent`, `konnectivity-agent`, `kube-proxy`, `node-local-dns`, `pdcsi-node`, the GMP `collector`) consume real budget on top of that — measured directly via `kubectl describe node`, about 291m per node on this cluster:
+```
+Allocated resources:
+  cpu   891m (94%)
+# 891m total - 600m (this pod's request) = ~291m DaemonSet overhead
+```
+An earlier artificial CPU request of `1500m` (meant to force one-pod-per-node scheduling) actually exceeded the real ~650m usable headroom per node — no number of additional `e2-medium` nodes could ever have satisfied it, and the autoscaler correctly refused to scale up rather than waste a node on a pod that still wouldn't fit. `600m` and `500m` both worked once this overhead was accounted for.
+
+**3. Manually forcing replica count fights the very autoscaling being tested.** The premium tier's `HorizontalPodAutoscaler` (`minReplicas: 2, maxReplicas: 5`) stayed attached throughout. With placeholder `nginx:alpine` pods doing essentially no real work, the HPA correctly observed near-zero CPU utilization and pulled the replica count back down on its own ~15–30s reconciliation loop, undoing manual `kubectl scale` commands in the background — including, at one point, replacing an already-`Running` pod with a new one once replicas were forced back up. This isn't an HPA bug; it's doing exactly its job. It means `kubectl scale` is the wrong tool for testing a Cluster Autoscaler on a Deployment that already has an active HPA — the correct test is generating genuine CPU load and letting the HPA (and by extension the Cluster Autoscaler) respond to real demand.
+
+**Next steps, in priority order:**
+- Request the `IN_USE_ADDRESSES` quota increase for the target region before the next test.
+- Re-test by generating actual CPU load (e.g., a load generator against the Service) instead of `kubectl scale`, so the HPA and Cluster Autoscaler respond to real demand rather than being overridden.
+- Move from `e2-medium` to a production-representative machine type (`e2-standard-4`), and re-derive the node-sizing math above for that machine type rather than reusing the `e2-medium`-specific numbers.
 
 ### Background reference: how Minikube works (general)
 
