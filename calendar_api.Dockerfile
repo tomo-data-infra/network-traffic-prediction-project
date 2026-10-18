@@ -25,7 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY requirements.txt .
+# requirements-gke.txt, not requirements.txt: a separate lockfile compiled under Python 3.12
+# specifically for this image, since requirements.txt is compiled under local dev's 3.14 and
+# its hashes only cover 3.14 wheels -- the exact mismatch that broke this build earlier.
+# Regenerate with: pip-compile --generate-hashes --allow-unsafe requirements.in -o requirements-gke.txt
+# (run from a 3.12 interpreter; --allow-unsafe is required too, same reason as requirements.txt).
+COPY requirements-gke.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 

@@ -98,7 +98,35 @@ An earlier artificial CPU request of `1500m` (meant to force one-pod-per-node sc
 **Next steps, in priority order:**
 - Switch to a **Private GKE Cluster with Cloud NAT**, rather than just requesting a quota increase. The `IN_USE_ADDRESSES` quota specifically tracks *external* IPs, and standard GKE nodes each get one by default — that's almost certainly why the wall landed at exactly 8. Private nodes only have internal IPs, with Cloud NAT handling outbound internet access (image pulls, etc.) through a small shared pool of external IPs instead of one per node — this avoids needing the quota at all, rather than asking GCP for more of it. (Not yet implemented — planned, not in progress.)
 - Re-test by generating actual CPU load (e.g., a load generator against the Service) instead of `kubectl scale`, so the HPA and Cluster Autoscaler respond to real demand rather than being overridden.
-- Move from `e2-medium` to a production-representative machine type (`e2-standard-4`), and re-derive the node-sizing math above for that machine type rather than reusing the `e2-medium`-specific numbers.
+- Move from `e2-medium` to a larger, dedicated-core machine type (`e2-standard-4`), and re-derive the node-sizing math above for that machine type rather than reusing the `e2-medium`-specific numbers. This is no longer just a sizing preference — the backend's own empirically-measured CPU request (below) already exceeds `e2-medium`'s ~650m real usable budget per node, so `e2-medium` can't schedule this pod at all, the same failure mode already documented above for the `1500m` test. `e2-standard-4` is dedicated-core rather than `e2-medium`'s shared-core type, so GKE's per-node reservation should be a much smaller fraction of capacity — expected, not yet measured the same way `e2-medium`'s numbers were.
+
+### Container CPU/RAM sizing: Locust stress tests against the real images
+
+The `resources.requests`/`limits` on the premium tier's backend/frontend containers (above) come from real load tests, not guesses — same "measure, don't guess" approach as the GKE node-sizing findings. Run from a separate, local-only directory (`infrastructure-simulation-local-sizing/`, kept apart from the production-bound manifests above so this testing doesn't disturb them) against the actual built images (`netops-backend:local`, `netops-frontend:local`) on Minikube, with Locust 2.x generating load and `kubectl top pods --containers` sampled continuously in parallel to capture real consumption.
+
+**Backend** (`/api/ping_data/`, the in-process NumPy aggregation + statistical forecasting path — the genuine CPU-bound workload) at 10 concurrent users:
+
+| Phase | CPU | Memory |
+|---|---|---|
+| Idle | ~1m | 281Mi |
+| Early ramp | 776–862m | 286–291Mi |
+| Steady state, 10 users | 2054–2410m (peak 2.41 cores) | plateaus at 319–321Mi |
+
+Zero request failures at any point — the backend stayed correct under load, just proportionally slower (12-hour-window tail latency hit 9.68s at peak CPU contention).
+
+**Frontend** (nginx serving the built React static bundle) ramped from 10 to 200 concurrent users:
+
+| Metric | Observed |
+|---|---|
+| CPU | 0–45m across the entire 10→200 range |
+| Memory | flat 7–10Mi |
+| Requests | 49,574 total, 0 failures |
+
+Static-asset serving is essentially flat across that range — not a sizing concern at any tested concurrency.
+
+**Caveat:** both tests only went up to the user counts above (10 for the backend, 200 for the frontend) — the real ceiling past those points is untested, not assumed to be higher or lower. The backend's `requests: 800m` is sized near the early-ramp level, not the full 10-user peak; the `limits: 2500m` is what actually has to cover that peak, and did (2.41 of 2.5 cores). Also note: the Deployments above still run the `python:3.11-slim`/`nginx:alpine` placeholders, not these real images (see the production-readiness checklist) — these resource numbers are sized for when the real images get wired in, not for the placeholders' own (much smaller) footprint.
+
+Only `premium-tier-alpha` was updated with these numbers. `personal-tier-beta` and `netops-dev` intentionally still carry the original placeholder `resources` (`50m`/`200m` CPU, `32Mi`/`64Mi` memory) — both are single-user/internal tiers by design (see the tiered table above: personal is "fixed, by design — no scaling for single-user tier"), not the many-concurrent-user traffic pattern this Locust testing measured, so sizing them off a 10-concurrent-user backend test would overprovision them for load they're never expected to see.
 
 ### Background reference: how Minikube works (general)
 

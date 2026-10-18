@@ -1,0 +1,43 @@
+# REQUIRED before kubectl apply: the host-built image must exist inside Minikube's own
+# Docker daemon, separate from your host's Docker daemon.
+#   minikube image load netops-frontend:local
+#
+# No DB/host-network concerns here -- this serves the pre-built static React bundle via
+# nginx, same as your local `docker run -p 5173:8080` test. No env vars, no hostAliases.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netops-frontend-sizing
+  namespace: sizing-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netops-frontend-sizing
+  template:
+    metadata:
+      labels:
+        app: netops-frontend-sizing
+    spec:
+      containers:
+        - name: ui-container
+          image: netops-frontend:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          # Intentionally no resources: requests/limits -- see backend-local.yaml for why.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netops-frontend-sizing
+  namespace: sizing-test
+spec:
+  type: NodePort
+  selector:
+    app: netops-frontend-sizing
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30173

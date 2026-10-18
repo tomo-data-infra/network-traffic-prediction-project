@@ -30,12 +30,22 @@ spec:
         ports:
         - containerPort: 8000
         resources:
+          # Measured empirically against the real netops-backend:local image under Locust
+          # load on Minikube (infrastructure-simulation-local-sizing/), not guessed: steady
+          # state climbed to 2.0-2.41 cores at 10 concurrent users hitting /api/ping_data/
+          # (in-process NumPy aggregation + forecasting), RAM plateaued around 320Mi.
+          # NOTE: the container above is still the python:3.11-slim placeholder, not the real
+          # Django image -- these numbers are sized for when that gets wired in (see README's
+          # production-readiness checklist), not for the current stub's own footprint.
+          # On e2-medium (2 vCPU), this request (800m) exceeds the ~650m real usable budget
+          # per node after GKE's reservation + DaemonSet overhead -- see README's GKE findings
+          # section. A pod this size needs e2-standard-4 or larger, not e2-medium.
           requests:
-            cpu: "50m"
-            memory: "32Mi"
+            cpu: "800m"
+            memory: "320Mi"
           limits:
-            cpu: "200m"
-            memory: "64Mi"
+            cpu: "2500m"
+            memory: "450Mi"
         readinessProbe:
           httpGet:
             path: /index.json
