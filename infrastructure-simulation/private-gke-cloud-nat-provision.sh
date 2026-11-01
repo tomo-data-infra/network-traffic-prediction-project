@@ -11,17 +11,26 @@
 # 2. Switched --zone to --region (zonal -> regional), per the decision to
 #    match the earlier real GKE test's topology (3 zones), not the AI draft's
 #    single-zone default.
-# 3. IMPORTANT regional-specific consequence of #2: --num-nodes/--min-nodes/
-#    --max-nodes are PER ZONE for a regional cluster, and GKE spreads a
-#    regional cluster across 3 zones by default (no --node-locations given,
-#    matching how the earlier real GKE test was run). So the actual initial/
-#    max node counts below are 3x the numbers shown -- e.g. --num-nodes=2
-#    means 2 nodes/zone x 3 zones = 6 nodes total initially, scaling up to
-#    5/zone x 3 = 15 total at --max-nodes=5. This is a real cost/capacity
-#    multiplier vs. the zonal draft -- confirm this total is what you intend
-#    before applying.
-# 4. min-nodes=2/max-nodes=5 reused deliberately from the earlier real GKE
-#    test's own numbers (documented in README.md), not re-guessed here.
+# 3. Regional clusters spread nodes across 3 zones by default here (no
+#    --node-locations override, matching the earlier real GKE test's topology).
+#    Node-count flags on a regional cluster:
+#      - --num-nodes is always PER ZONE (there is no total-based variant), so
+#        --num-nodes=1 means 1 node x 3 zones = 3 nodes at start.
+#      - --min-nodes/--max-nodes are also PER ZONE: the real total is 3x the
+#        value. An earlier version of this script used --min-nodes=2 and
+#        --max-nodes=5, which actually meant 6 to 15 nodes in total.
+#      - --total-min-nodes/--total-max-nodes are literal totals across all zones.
+#    This script uses the total-based autoscaling bounds (3 to 6 nodes) on
+#    purpose: for a pay-as-you-go simulation, a clearly stated maximum cost
+#    matters more than guaranteeing a minimum node count in every zone.
+#    A real run confirmed 3 nodes at start (`kubectl get nodes`). Only the
+#    initial size is a multiple of the zone count: the cluster autoscaler adds
+#    or removes nodes one at a time, and by default (BALANCED location policy)
+#    tries to keep the zones even, without guaranteeing it. How scale-up is
+#    actually distributed across zones under real load has not been observed
+#    yet; only the start-up state has been confirmed.
+#    For a production node pool, reconsider per-zone minimums
+#    (e.g. --min-nodes=1), which guarantee at least one node in every zone.
 #
 # Still NOT corrected / worth knowing before you run this:
 # - machine-type=e2-standard-4's real per-pod usable CPU budget is still an
@@ -132,10 +141,9 @@ gcloud container clusters create ${CLUSTER_NAME} \
     --total-max-nodes=6 \
     --workload-pool=${PROJECT_ID}.svc.id.goog
 
-
-
-    # NOTE: num-nodes/min-nodes/max-nodes are PER ZONE -- actual totals across
-    # the 3 auto-selected zones are 6 nodes initial, 6-15 nodes once autoscaled.
+    # NOTE: --num-nodes is per zone (1 x 3 zones = 3 nodes at start), while
+    # --total-min-nodes/--total-max-nodes are totals across all zones (3 to 6).
+    # See header item 3 for why total-based autoscaling bounds were chosen.
 
 # 6. Point kubectl at the new cluster and confirm the nodes are up
 gcloud container clusters get-credentials ${CLUSTER_NAME} --region=${REGION}

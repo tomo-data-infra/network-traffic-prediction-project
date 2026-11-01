@@ -96,9 +96,39 @@ An earlier artificial CPU request of `1500m` (meant to force one-pod-per-node sc
 **3. Manually forcing replica count fights the very autoscaling being tested.** The premium tier's `HorizontalPodAutoscaler` (`minReplicas: 2, maxReplicas: 5`) stayed attached throughout. With placeholder `nginx:alpine` pods doing essentially no real work, the HPA correctly observed near-zero CPU utilization and pulled the replica count back down on its own ~15–30s reconciliation loop, undoing manual `kubectl scale` commands in the background — including, at one point, replacing an already-`Running` pod with a new one once replicas were forced back up. This isn't an HPA bug; it's doing exactly its job. It means `kubectl scale` is the wrong tool for testing a Cluster Autoscaler on a Deployment that already has an active HPA — the correct test is generating genuine CPU load and letting the HPA (and by extension the Cluster Autoscaler) respond to real demand.
 
 **Next steps, in priority order:**
-- Switch to a **Private GKE Cluster with Cloud NAT**, rather than just requesting a quota increase. The `IN_USE_ADDRESSES` quota specifically tracks *external* IPs, and standard GKE nodes each get one by default — that's almost certainly why the wall landed at exactly 8. Private nodes only have internal IPs, with Cloud NAT handling outbound internet access (image pulls, etc.) through a small shared pool of external IPs instead of one per node — this avoids needing the quota at all, rather than asking GCP for more of it. (Not yet implemented — planned, not in progress.)
+- Switch to a **Private GKE Cluster with Cloud NAT**, rather than just requesting a quota
+  increase. The `IN_USE_ADDRESSES` quota specifically tracks *external* IPs, and standard
+  GKE nodes each get one by default, which is almost certainly why the wall landed at
+  exactly 8. Private nodes only have internal IPs, with Cloud NAT handling outbound
+  internet access (for example, pulling public images from Docker Hub) through a small
+  shared pool of external IPs instead of one per node. Google APIs and Artifact Registry
+  are reached through Private Google Access, so they do not use NAT at all.
+  This avoids needing the quota rather than asking GCP for more of it.
+  **Implemented and verified on a real cluster:** nodes run with no external IPs, and the
+  app reaches Cloud SQL over a private IP (see "Private GKE + Cloud NAT + Cloud SQL: real
+  migration verification" below). Scaling past the previous 8-node limit has not been
+  tested yet, since autoscaling is currently capped at 6 nodes.
 - Re-test by generating actual CPU load (e.g., a load generator against the Service) instead of `kubectl scale`, so the HPA and Cluster Autoscaler respond to real demand rather than being overridden.
 - Move from `e2-medium` to a larger, dedicated-core machine type (`e2-standard-4`), and re-derive the node-sizing math above for that machine type rather than reusing the `e2-medium`-specific numbers. This is no longer just a sizing preference — the backend's own empirically-measured CPU request (below) already exceeds `e2-medium`'s ~650m real usable budget per node, so `e2-medium` can't schedule this pod at all, the same failure mode already documented above for the `1500m` test. `e2-standard-4` is dedicated-core rather than `e2-medium`'s shared-core type, so GKE's per-node reservation should be a much smaller fraction of capacity — expected, not yet measured the same way `e2-medium`'s numbers were.
+
+### Private GKE + Cloud NAT + Cloud SQL: real migration verification
+
+Ran the full migration path end-to-end on a real GCP project, not just provisioned and left idle. Provisioned a Private GKE cluster (regional, 3 zones, `e2-standard-4`, `--num-nodes=1`/`--total-min-nodes=3`/`--total-max-nodes=6`) with Cloud NAT and Private Service Access, a private-IP Cloud SQL (PostgreSQL 16) instance, and deployed the real `netops-backend`/`netops-frontend` images from Artifact Registry onto it.
+
+**Migration:** local `pg_dump`, then a GCS bucket, then `gcloud sql import sql`. Row count verified identical before and after: 5,613,048 rows, matching exactly between the local database and the Cloud SQL copy. Cloud SQL ran as a single zonal instance without backups to keep costs down.
+
+**End-to-end connectivity:** used `kubectl port-forward` to both the backend and frontend Pods, followed by a live browser check against the dashboard. The port-forward transcripts show real traffic (`Handling connection for 5173`, `Handling connection for 8000` x8), and the backend successfully queried the Cloud SQL instance over its private IP.
+
+**What this proves and what it doesn't:**
+- Confirmed: nodes run with zero external IPs, Private Service Access correctly peers Cloud SQL's network into the VPC, and the app reaches Cloud SQL over a private IP. The private-nodes architecture itself works.
+- Partially verified: Cloud NAT. Basic NAT egress works. The throwaway `psql-client` Pod pulled `postgres:16` from Docker Hub, which private nodes can only reach through Cloud NAT. The app's own images come from Artifact Registry through Private Google Access, so they never touch NAT. What has not been tested is dynamic port allocation (64 to 4,096 ports per node) under heavy outbound load.
+- Not yet confirmed: whether this architecture actually clears the original `IN_USE_ADDRESSES` 8-node wall. Autoscaling is currently capped at `--total-max-nodes=6`, so the cluster has never actually needed more than 8 nodes to test against that limit.
+
+Two findings from this run:
+1. The provisioning script's own comments had drifted from its actual flags. They described a per-zone `--min-nodes=2`/`--max-nodes=5` approach (real total is 3x that), but the script had since moved to `--total-min-nodes=3`/`--total-max-nodes=6` (a literal total, confirmed via `kubectl get nodes` showing exactly 3 nodes). Comments corrected to match what the script actually does.
+2. Teardown's `gcloud services vpc-peerings delete` step can fail with `FLOW_SN_DC_RESOURCE_PREVENTING_DELETE_CONNECTION` even after confirming `gcloud sql instances list` is already empty, since Cloud SQL's background cleanup can lag behind the instance disappearing from that list. Not fatal: the subsequent address, subnet, and VPC deletes still succeeded in this run regardless.
+
+**Still open:** the `resources.requests`/`limits` settled below were measured locally with Locust against the real images, but so far they only live in the premium-tier manifests, which still run placeholder images. They have not been applied to the real-image manifests used in this test, so this run verified connectivity and correctness, not CPU/RAM behavior under load on a real cluster.
 
 ### Container CPU/RAM sizing: Locust stress tests against the real images
 
